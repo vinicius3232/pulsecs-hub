@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { runAutomationForEvent } from './engine';
-import type { AutomationStore, EventRow, HandlerResult } from './types';
+import { runAutomationForEvent } from './engine.js';
+import type { AutomationStore, EventRow, HandlerResult } from './types.js';
 
 export const MAX_ATTEMPTS = 5;
 const MAX_ERROR_LEN = 300;

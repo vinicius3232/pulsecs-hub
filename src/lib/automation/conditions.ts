@@ -1,4 +1,4 @@
-import type { RuleCondition } from './types';
+import type { RuleCondition } from './types.js';
 
 /** Lê "a.b.c" de um objeto; devolve undefined se qualquer parte faltar. */
 export function resolveField(context: Record<string, unknown>, path: string): unknown {

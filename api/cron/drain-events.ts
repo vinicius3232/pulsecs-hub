@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { bearerToken, safeEqual } from '../_lib/security';
-import { drainEvents } from '../../src/lib/automation/drain';
-import { createSupabaseStore } from '../../src/lib/automation/supabase-store';
+import { bearerToken, safeEqual } from '../_lib/security.js';
+import { drainEvents } from '../../src/lib/automation/drain.js';
+import { createSupabaseStore } from '../../src/lib/automation/supabase-store.js';
 
 /**
  * Cron diário: emite eventos guiados pelo relógio (renovação próxima, RH sem login)

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors, bearerToken, getSupabaseUserId, rateLimited } from './_lib/security';
+import { applyCors, bearerToken, getSupabaseUserId, rateLimited } from './_lib/security.js';
 
 const MAX_PROMPT_CHARS = 4000;
 

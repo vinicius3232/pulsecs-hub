@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { AutomationStore, NewTask, RuleRow, RunStatus, ActionResult } from './types';
+import type { AutomationStore, NewTask, RuleRow, RunStatus, ActionResult } from './types.js';
 
 const PG_UNIQUE_VIOLATION = '23505';
 

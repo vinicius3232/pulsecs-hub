@@ -1,5 +1,5 @@
-import { interpolate } from './conditions';
-import type { ActionResult, ActionSpec, AutomationStore, EventRow, RuleRow, Severity } from './types';
+import { interpolate } from './conditions.js';
+import type { ActionResult, ActionSpec, AutomationStore, EventRow, RuleRow, Severity } from './types.js';
 
 export interface ActionCtx {
   store: AutomationStore;

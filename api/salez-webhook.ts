@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { bearerToken, rateLimited, safeEqual } from './_lib/security';
+import { bearerToken, rateLimited, safeEqual } from './_lib/security.js';
 
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const digits = (v: unknown, max: number) => str(v, 40).replace(/\D/g, '').slice(0, max);

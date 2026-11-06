@@ -1,6 +1,6 @@
-import { ensureActionsRegistered, runAction } from './actions';
-import { evaluateConditions } from './conditions';
-import type { ActionResult, AutomationStore, EventRow, HandlerResult, RunStatus } from './types';
+import { ensureActionsRegistered, runAction } from './actions.js';
+import { evaluateConditions } from './conditions.js';
+import type { ActionResult, AutomationStore, EventRow, HandlerResult, RunStatus } from './types.js';
 
 /**
  * Motor de regras: para um evento, executa as regras ativas do tipo que casam.

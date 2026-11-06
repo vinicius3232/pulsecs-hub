@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateConditions, interpolate } from './conditions';
-import { runAutomationForEvent } from './engine';
-import { backoffAt, drainEvents, MAX_ATTEMPTS } from './drain';
-import type { ActionResult, AutomationStore, EventRow, NewTask, RuleRow, RunStatus } from './types';
+import { evaluateConditions, interpolate } from './conditions.js';
+import { runAutomationForEvent } from './engine.js';
+import { backoffAt, drainEvents, MAX_ATTEMPTS } from './drain.js';
+import type { ActionResult, AutomationStore, EventRow, NewTask, RuleRow, RunStatus } from './types.js';
 
 // ---- Store em memória ------------------------------------------------------
 function memStore(rules: RuleRow[], company: Record<string, unknown> | null) {
