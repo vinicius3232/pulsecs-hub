@@ -36,7 +36,7 @@ Uma solução corporativa completa de **Customer Success (CSM)**, **Onboarding (
 - **Equilíbrio com IA (1 Clique):** Botão *"Equilibrar Carteiras com IA"* que roda um algoritmo guloso para balancear o MRR e a quantidade de contas entre todos os CSMs.
 
 ### 4. ⚡ Suporte Nativo ao Groq (Inferência Quase Instantânea)
-- **Preset Groq no Seletor de IA:** Acesse o Painel Master (`admin123`) e selecione **"Groq LPU (Ultra-Fast)"**.
+- **Preset Groq no Seletor de IA:** Acesse o Painel Master e selecione **"Groq LPU (Ultra-Fast)"**.
 - **Endpoint:** `https://api.groq.com/openai/v1`
 - **Modelos Recomendados:** `llama-3.3-70b-versatile` ou `llama-3.1-8b-instant`.
 - O Copilot responde com latência inferior a 500ms.
@@ -75,5 +75,7 @@ Uma solução corporativa completa de **Customer Success (CSM)**, **Onboarding (
 
 ---
 
-## 🔐 Senha Master Padrão
-- **Senha Inicial:** `admin123` (alterável na aba de segurança do Painel Master).
+## 🔐 Senha Master
+- Não há senha padrão. No **primeiro acesso** ao Painel Master, a senha digitada (mín. 8 caracteres) vira a senha master. Ela é guardada apenas como hash SHA-256 com salt; pode ser alterada na aba de segurança.
+- ⚠️ É uma trava de interface no navegador (`localStorage`), não autenticação de servidor. Para uso multiusuário real, use login no backend.
+- A chave de API de IA fica só no navegador de quem a digitou e **não** entra no backup JSON. Em produção, use um proxy serverless.
