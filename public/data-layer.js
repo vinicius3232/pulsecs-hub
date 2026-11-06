@@ -238,7 +238,21 @@
     };
   }
 
+  const CHANNEL_LABEL = { whatsapp: 'WhatsApp', email: 'E-mail', salez_agent: 'Agente Salez', call: 'Ligação', note: 'Nota' };
+  const TRIGGER_LABEL = { automation: 'Automação', manual_contact: 'Contato manual', churn_rescue: 'Resgate de conta', onboarding_unlock: 'Destravar onboarding', qbr_invite: 'Convite de QBR' };
+
+  function mapInteraction(r) {
+    return {
+      id: r.id,
+      channel: CHANNEL_LABEL[r.channel] || String(r.channel || 'Contato'),
+      trigger: TRIGGER_LABEL[r.trigger_type] || String(r.trigger_type || ''),
+      content: String(r.content || '').slice(0, 400),
+      when: r.sent_at || null
+    };
+  }
+
   const pure = {
+    mapInteraction,
     mapTask, derivedKpis, monthlyTrend,
     numId, uuidFor, fmtLogin, contactString, parseContact, daysUntil, renewalStage,
     mapCsm, mapCompany, mapMeeting, clientKey, companyPayload, contactPayload, meetingPayload,
@@ -371,7 +385,8 @@
     PulseData.fillClientModal = function (c) {
       const box = document.getElementById('modal-client-adoption');
       if (!box) return;
-      if (PulseData.mode !== 'db') { box.classList.add('hidden'); return; }
+      if (PulseData.mode !== 'db') { box.classList.add('hidden'); const tl = document.getElementById('modal-client-timeline'); if (tl) tl.classList.add('hidden'); return; }
+      PulseData.loadTimeline(c);
       const insight = document.getElementById('modal-client-copilot-insight');
       const grid = document.getElementById('modal-client-adoption-grid');
       const list = document.getElementById('modal-client-factors');
@@ -403,6 +418,41 @@
             : 'Nenhum fator de risco no último cálculo (' + c.hs + '/100).';
       }
       box.classList.remove('hidden');
+    };
+
+    // Linha do tempo de contatos da empresa (últimos 15). Ignora a resposta se o modal já mudou de empresa.
+    PulseData.loadTimeline = async function (c) {
+      const box = document.getElementById('modal-client-timeline');
+      const list = document.getElementById('modal-client-timeline-list');
+      if (!box || !list) return;
+      if (PulseData.mode !== 'db' || !c.uuid) { box.classList.add('hidden'); return; }
+      list.textContent = '';
+      const loading = document.createElement('li'); loading.className = 'text-slate-500 dark:text-slate-400'; loading.textContent = 'Carregando…';
+      list.appendChild(loading); box.classList.remove('hidden');
+      try {
+        const { data, error } = await sb.from('interactions').select('*').eq('company_id', c.uuid).order('sent_at', { ascending: false }).limit(15);
+        if (error) throw new Error(error.message);
+        if (typeof activeClientForModal === 'undefined' || !activeClientForModal || activeClientForModal.uuid !== c.uuid) return;
+        list.textContent = '';
+        const rows = (data || []).map(mapInteraction);
+        if (!rows.length) {
+          const li = document.createElement('li'); li.className = 'text-slate-500 dark:text-slate-400'; li.textContent = 'Nenhum contato registrado ainda.'; list.appendChild(li); return;
+        }
+        for (const r of rows) {
+          const li = document.createElement('li');
+          li.className = 'p-2 rounded-lg bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800';
+          const top = document.createElement('div'); top.className = 'flex justify-between gap-2 text-slate-500 dark:text-slate-400';
+          const who = document.createElement('span'); who.textContent = r.channel + (r.trigger ? ' · ' + r.trigger : '');
+          const at = document.createElement('span');
+          at.textContent = r.when ? new Date(r.when).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+          top.append(who, at);
+          const body = document.createElement('div'); body.className = 'text-slate-900 dark:text-slate-100'; body.textContent = r.content;
+          li.append(top, body); list.appendChild(li);
+        }
+      } catch (e) {
+        list.textContent = '';
+        const li = document.createElement('li'); li.className = 'text-rose-700 dark:text-rose-400'; li.textContent = 'Não foi possível carregar o histórico.'; list.appendChild(li);
+      }
     };
 
     PulseData.load = async function () {

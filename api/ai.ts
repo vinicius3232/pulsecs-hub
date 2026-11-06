@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 2. Limite de uso por usuário: 20 chamadas / minuto
-  if (rateLimited(`ai:${userId}`, 20, 60_000)) {
+  if (await rateLimited(`ai:${userId}`, 20, 60_000)) {
     res.setHeader('Retry-After', '60');
     return res.status(429).json({ error: 'Too Many Requests' });
   }

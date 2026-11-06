@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const authId = await getSupabaseUserId(bearerToken(req));
   if (!authId) return res.status(401).json({ error: 'Unauthorized' });
-  if (rateLimited(`run:${authId}`, 30, 60_000)) {
+  if (await rateLimited(`run:${authId}`, 30, 60_000)) {
     res.setHeader('Retry-After', '60');
     return res.status(429).json({ error: 'Too Many Requests' });
   }

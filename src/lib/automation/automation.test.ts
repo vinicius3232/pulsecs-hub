@@ -324,3 +324,54 @@ test('drain: exceção do handler vira retry, não derruba o lote', async () => 
   assert.equal(sum.done, 1);
   assert.equal(updates.length, 2);
 });
+
+// ---- recuperação: queda entre "executar" e "confirmar" ----------------------
+test('RECUPERAÇÃO: processo cai depois de executar a regra e antes de marcar o evento como feito', async () => {
+  const m = memStore([riskRule], acme);
+  const ev = event({ id: 'crash', attempts: 1 });
+  // 1ª passada: o motor roda (cria tarefa e registra a execução) e o processo "morre" antes de confirmar
+  const quebraDepois = async (s: AutomationStore, e: EventRow) => { await runAutomationForEvent(s, e); throw new Error('processo morreu'); };
+  const a = fakeAdmin([ev]);
+  const s1 = await drainEvents(a.admin, m.store, { handler: quebraDepois });
+  assert.equal(s1.retried, 1);
+  assert.equal(a.updates[0].patch.status, 'pending');
+  // 2ª passada: o evento volta (backoff) e é reprocessado de verdade
+  const b = fakeAdmin([{ ...ev, attempts: 2 }]);
+  const s2 = await drainEvents(b.admin, m.store);
+  assert.equal(s2.done, 1);
+  assert.equal(b.updates[0].patch.status, 'done');
+  // nada duplicou: 1 tarefa, 1 registro de execução
+  assert.equal(m.tasks.length, 1);
+  assert.equal([...m.runs.keys()].filter(k => k.endsWith(':crash')).length, 1);
+});
+
+test('RECUPERAÇÃO: queda logo depois de agendar um delay não duplica a espera no reprocesso', async () => {
+  const m = memStore([delayRule], acme);
+  const ev = event({ id: 'crash2' });
+  const quebraDepois = async (s: AutomationStore, e: EventRow) => { await runAutomationForEvent(s, e); throw new Error('processo morreu'); };
+  await drainEvents(fakeAdmin([ev]).admin, m.store, { handler: quebraDepois });
+  await drainEvents(fakeAdmin([{ ...ev, attempts: 2 }]).admin, m.store);
+  assert.equal(m.scheduled.length, 1);          // UNIQUE (regra, evento, passo)
+  assert.equal(m.runs.get('r3:crash2')?.status, 'waiting');
+});
+
+test('RECUPERAÇÃO: queda ao concluir uma espera: tarefa não duplica; passos sem idempotência podem repetir (limitação conhecida)', async () => {
+  const rule: RuleRow = { id: 'r9', name: 'x', conditions: [], actions: [
+    { type: 'delay', config: { days: 1 } },
+    { type: 'create_task', config: { title: 'checar' } },
+    { type: 'add_note', config: { content: 'nota' } }
+  ] };
+  const m = memStore([rule], acme);
+  await runAutomationForEvent(m.store, event({ id: 'e9' }), { now: () => 0 });
+  // a 1ª tentativa de confirmar a espera cai
+  const original = m.store.finishScheduled;
+  let caiu = false;
+  m.store.finishScheduled = async (...args) => { if (!caiu) { caiu = true; throw new Error('queda ao confirmar'); } return original(...args); };
+  const s1 = await drainScheduled(m.store, { now: () => 0 });
+  assert.equal(s1.retried, 1);
+  const s2 = await drainScheduled(m.store, { now: () => 0 });
+  assert.equal(s2.resumed, 1);
+  assert.equal(m.tasks.length, 1);          // dedupe da tarefa
+  assert.equal(m.notes.length, 2);          // at-least-once: a nota repete (add_note não é idempotente)
+  assert.equal(m.runs.get('r9:e9')?.status, 'success');
+});

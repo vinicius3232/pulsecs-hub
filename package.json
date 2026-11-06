@@ -8,9 +8,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "migrate": "node supabase/migrate-localstorage.js",
-    "test": "tsx --test src/lib/automation/automation.test.ts src/lib/ingest.test.ts public/data-layer.test.mjs public/today.test.mjs",
+    "test": "tsx --test src/lib/automation/automation.test.ts src/lib/ingest.test.ts src/lib/salez.test.ts src/lib/ratelimit.test.ts public/data-layer.test.mjs public/today.test.mjs public/automations.test.mjs",
     "test:rls": "node --test supabase/tests/rls.test.mjs",
-    "test:health": "tsx --test supabase/tests/health.test.ts"
+    "test:health": "tsx --test supabase/tests/health.test.ts",
+    "test:idempotency": "tsx --test supabase/tests/idempotency.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

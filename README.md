@@ -161,7 +161,7 @@ O front só controla a experiência; **quem protege os dados é a RLS do banco**
 - **Teste:** `npm install && npm run test:rls` roda 13 cenários por perfil num Postgres embutido (PGlite). Sem a migration 0004, 11 deles falham.
 
 ### Ativar o login (uma vez)
-1. No Supabase aplique, nesta ordem: `schema.sql`, `0002`, `0003`, `0004`, `0005` (e `seed.sql`, se quiser dados de exemplo).
+1. No Supabase aplique, nesta ordem: `schema.sql`, `0002`, `0003`, `0004`, `0005`, `0006` (e `seed.sql`, se quiser dados de exemplo).
 2. **Authentication › Sign In / Providers › Email › desligue "Allow new users to sign up"** (a RLS já nega tudo a quem não está na equipe, mas não deixe a porta aberta).
 3. Crie os usuários em Authentication › Users (convite) e vincule ao perfil:
    ```sql
@@ -221,4 +221,38 @@ Quanto da receita está em risco, quais contas exigem ação e por quê, e a pr�
 | `npm run test:health` | paridade SQL × TS, recálculo, snapshots, guardas de coluna, `seed.sql` |
 
 ### Ordem das migrations
-`schema.sql` → `0002` → `0003` → `0004` → `0005`, depois `seed.sql` (opcional). Todas idempotentes.
+`schema.sql` → `0002` → `0003` → `0004` → `0005` → `0006`, depois `seed.sql` (opcional). Todas idempotentes.
+
+---
+
+## 🔁 Idempotência, limite global, automações na tela e linha do tempo
+
+### Webhook da Salez sem duplicar (`0006_webhook_idempotency.sql`)
+A deduplicação por **nome** foi trocada por uma **reserva no banco**. Cada entrega reserva uma chave única em `webhook_deliveries` (UNIQUE `source + external_id`) **antes** de criar qualquer coisa:
+- **Chave:** o `deal_id` (ou `id`/`external_id`) da Salez; sem ele, um hash de nome + e-mail + telefone (caixa, acento e espaços não importam).
+- **Reenvio e entregas simultâneas** criam uma única empresa. **Homônimos** (mesmo nome, negócios diferentes) não se confundem.
+- Se a criação falha, a reserva é liberada (a Salez reenvia). Se só o contato falha, a empresa fica e o reenvio vira "duplicate".
+- Tabela acessível só pelo service role; `fn_purge_webhook_deliveries(90)` (chamada pelo cron) apaga as entregas com mais de 90 dias.
+- Resposta: `{ "status": "success", "company_id": "..." }` ou `{ "status": "duplicate" }`.
+
+### Limite de requisições global
+Com `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` o limite vale para **todas as instâncias** (janela fixa via REST, sem SDK). Sem essas variáveis, ou se o Redis cair/demorar (1,5 s), o endpoint **degrada para o limite local por instância**: não derruba e não libera tudo. Vale para `/api/ai`, `/api/automation/run`, `/api/ingest/metrics` e o webhook.
+
+### Aba Automações
+Regras em linguagem simples (**Quando / Se / Então**), execuções recentes (visíveis só ao Head), **ativar/desativar** (só o Head; a RLS decide) e **Executar agora** para regras `manual.run` (chama `/api/automation/run` com o seu login). A URL de uma chamada HTTP aparece só com o host (caminho e token não vão para a tela). Criar/editar passos continua por SQL.
+
+### Linha do tempo do cliente
+O Raio-X mostra os últimos 15 contatos (`interactions`): WhatsApp, e-mail, ligação, notas e o que as automações registram.
+
+### Recuperação de falhas (o que é garantido e o que não é)
+- **Garantido:** reprocessar um evento após queda **não duplica** tarefas (chave única por regra+empresa), execuções (upsert por regra+evento) nem esperas agendadas (UNIQUE por passo).
+- **Limitação conhecida:** a entrega é "pelo menos uma vez". Se a queda ocorrer **no meio** de uma retomada, passos sem idempotência (`add_note`, `http_request`) podem **repetir**. Os testes documentam esse comportamento.
+- **Não testável aqui:** corrida real entre conexões simultâneas no Postgres (o PGlite tem uma conexão só). A trava é a UNIQUE do banco, validada por teste; a corrida em si foi simulada com um armazenamento em memória atômico, e uma versão não atômica faz os testes falharem.
+
+### Variáveis novas
+`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (opcionais). Migration nova: `0006` (depois da `0005`).
+
+| Comando | O que cobre |
+|---|---|
+| `npm test` | motor, recuperação, ingestão, webhook (concorrência), limite global, camada de dados, "Hoje" e automações |
+| `npm run test:idempotency` | UNIQUEs, acesso e retenção de `webhook_deliveries`, tarefas e esperas |

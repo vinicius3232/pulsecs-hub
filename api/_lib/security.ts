@@ -65,20 +65,5 @@ export async function getSupabaseUserId(token: string): Promise<string | null> {
   }
 }
 
-// Limite por usuário em memória. Em serverless cada instância tem o seu contador,
-// então é uma proteção de melhor esforço; para limite global use Upstash/Vercel KV.
-const hits = new Map<string, number[]>();
-export function rateLimited(key: string, max: number, windowMs: number): boolean {
-  const now = Date.now();
-  const recent = (hits.get(key) || []).filter(t => now - t < windowMs);
-  if (recent.length >= max) {
-    hits.set(key, recent);
-    return true;
-  }
-  recent.push(now);
-  hits.set(key, recent);
-  if (hits.size > 5000) {
-    for (const [k, v] of hits) if (!v.some(t => now - t < windowMs)) hits.delete(k);
-  }
-  return false;
-}
+// Limite de requisições: global via Upstash Redis quando configurado, com fallback em memória.
+export { rateLimited } from '../../src/lib/ratelimit.js';

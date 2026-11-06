@@ -348,6 +348,10 @@
                 <span>Pipeline de Renovação</span>
               </div>
             </button>
+            <button onclick="switchTab('automations')" id="nav-automations" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              <span>Automações</span>
+            </button>
           </nav>
         </div>
 
@@ -764,6 +768,14 @@
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O que precisa da sua atenção agora, por quê e qual a próxima ação.</p>
         </div>
         <div id="today-content"></div>
+      </section>
+
+      <section id="tab-automations" class="tab-content hidden space-y-6 animate-tab">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Automações</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Regras que transformam eventos (risco, renovação, fase) em tarefas e ações. Quando, se e então, em linguagem simples.</p>
+        </div>
+        <div id="automations-content"></div>
       </section>
 
       <section id="tab-dashboard" class="tab-content hidden space-y-6 animate-tab">
@@ -2332,6 +2344,10 @@
           <div id="modal-client-adoption-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
           <ul id="modal-client-factors" class="mt-2 list-disc pl-5 space-y-0.5 text-slate-700 dark:text-slate-300"></ul>
         </div>
+        <div id="modal-client-timeline" class="hidden">
+          <label class="block font-semibold text-slate-300 mb-1">Linha do tempo de contatos:</label>
+          <ul id="modal-client-timeline-list" class="space-y-1.5 max-h-48 overflow-y-auto"></ul>
+        </div>
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -2546,6 +2562,8 @@
 
       if (tabId === 'today') {
         renderTodayTab();
+      } else if (tabId === 'automations') {
+        renderAutomationsTab();
       } else if (tabId === 'dashboard') {
         setTimeout(updateCharts, 50);
       } else if (tabId === 'calendar') {
@@ -4646,6 +4664,7 @@
   </script>
   <script src="data-layer.js"></script>
   <script src="today.js"></script>
+  <script src="automations.js"></script>
 
   <script>
     // ===== Login (Supabase Auth) =====

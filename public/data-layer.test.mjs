@@ -188,3 +188,10 @@ test('mapCompany traz NPS, inadimplência, fatores de risco e se o score já foi
   const none = P.mapCompany({ ...row, nps_score: null, risk_factors: null, health_computed_at: null, has_overdue_invoice: null }, null, new Date());
   assert.equal(none.npsScore, null); assert.equal(none.overdue, false); assert.equal(none.riskFactors.length, 0); assert.equal(none.healthComputed, false);
 });
+
+test('mapInteraction: rótulos em português, texto limitado e dados ausentes', () => {
+  const r = P.mapInteraction({ id: 'i1', channel: 'salez_agent', trigger_type: 'automation', content: 'x'.repeat(900), sent_at: '2026-11-06T12:00:00Z' });
+  assert.equal(r.channel, 'Agente Salez'); assert.equal(r.trigger, 'Automação'); assert.equal(r.content.length, 400); assert.equal(r.when, '2026-11-06T12:00:00Z');
+  const v = P.mapInteraction({ id: 'i2', channel: 'carrier_pigeon', trigger_type: 'custom_x', content: null });
+  assert.equal(v.channel, 'carrier_pigeon'); assert.equal(v.trigger, 'custom_x'); assert.equal(v.content, ''); assert.equal(v.when, null);
+});

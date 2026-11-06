@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!secret) return res.status(503).json({ error: 'Ingestion not configured' });
 
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-  if (rateLimited(`ingest:${ip}`, 30, 60_000)) return res.status(429).json({ error: 'Too Many Requests' });
+  if (await rateLimited(`ingest:${ip}`, 30, 60_000)) return res.status(429).json({ error: 'Too Many Requests' });
 
   const provided = String(req.headers['x-ingest-secret'] || '') || bearerToken(req);
   if (!provided || !safeEqual(provided, secret)) return res.status(401).json({ error: 'Unauthorized' });
