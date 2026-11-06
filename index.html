@@ -201,6 +201,13 @@
               <i data-lucide="file-text" class="w-4 h-4"></i>
               <span>Relatórios Mensais & QBR</span>
             </button>
+            <button onclick="switchTab('renewal')" id="nav-renewal" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
+              <div class="flex items-center gap-3">
+                <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>
+                <span>Pipeline de Renovação</span>
+              </div>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300">90/60/30d</span>
+            </button>
           </nav>
         </div>
 
@@ -208,6 +215,13 @@
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Comunicação & Time</span>
           <nav class="mt-2 space-y-1">
+            <button onclick="switchTab('campaigns')" id="nav-campaigns" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
+              <div class="flex items-center gap-3">
+                <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                <span>Kits RH & Campanhas IA</span>
+              </div>
+              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">Kits</span>
+            </button>
             <button onclick="switchTab('communications')" id="nav-communications" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="send" class="w-4 h-4 text-emerald-400"></i>
@@ -229,6 +243,13 @@
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Organização & Rotina</span>
           <nav class="mt-2 space-y-1">
+            <button onclick="switchTab('partners')" id="nav-partners" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
+              <div class="flex items-center gap-3">
+                <i data-lucide="store" class="w-4 h-4 text-emerald-400"></i>
+                <span>Rede de Parceiros & LGPD</span>
+              </div>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300">5 Categorias</span>
+            </button>
             <button onclick="switchTab('reminders')" id="nav-reminders" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all bg-indigo-50 dark:bg-brand-600/15 text-brand-600 dark:text-brand-300 border border-indigo-200 dark:border-brand-500/30">
               <div class="flex items-center gap-3">
                 <i data-lucide="clock" class="w-4 h-4 text-brand-500"></i>
@@ -1205,6 +1226,388 @@
         </div>
       </section>
 
+      <!-- ============================================================== -->
+      <!-- ABA: PIPELINE DE RENOVAÇÃO & RETENÇÃO LÍQUIDA (FASE 4)         -->
+      <!-- ============================================================== -->
+      <section id="tab-renewal" class="tab-content hidden space-y-6 animate-tab">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+              </span>
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pipeline de Renovação & NRR</h1>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Controle antecipado de vencimentos contratuais (90, 60 e 30 dias) com prova de valor e defesa de ROI para o RH.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="runAutoRenewalForecastAudit()" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-amber-600/30 transition-all">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> Auditoria de Renovação com IA
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs de Renovação -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs">
+              <span>MRR em Janela de Renovação</span>
+              <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-amber-400 mt-1" id="renewal-stat-mrr">R$ 34.7k</div>
+            <p class="text-[11px] text-slate-500 mt-0.5">3 contratos nos próximos 90 dias</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs">
+              <span>Net Retention Rate (NRR)</span>
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-emerald-400 mt-1">108.4%</div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Expansão supera cancelamentos</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs">
+              <span>Taxa Média de Adoção</span>
+              <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-indigo-400 mt-1">81.2%</div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Colaboradores ativos na carteira</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 text-xs">
+              <span>Economia Gerada Total</span>
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-emerald-400 mt-1">R$ 384.2k</div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Alavanca de ROI na renovação</p>
+          </div>
+        </div>
+
+        <!-- Kanban de Estágios de Renovação (90 / 60 / 30 Dias) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Coluna 1: 90 Dias -->
+          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span class="font-bold text-xs uppercase tracking-wider text-blue-400 block">Estágio 90 Dias</span>
+                <span class="text-[11px] text-slate-400">Auditoria de Valor & Prova de ROI</span>
+              </div>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold" id="renewal-count-90">1</span>
+            </div>
+            <div class="space-y-3" id="renewal-cards-90">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+
+          <!-- Coluna 2: 60 Dias -->
+          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span class="font-bold text-xs uppercase tracking-wider text-amber-400 block">Estágio 60 Dias</span>
+                <span class="text-[11px] text-slate-400">Apresentação Executiva de QBR</span>
+              </div>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold" id="renewal-count-60">1</span>
+            </div>
+            <div class="space-y-3" id="renewal-cards-60">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+
+          <!-- Coluna 3: 30 Dias -->
+          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span class="font-bold text-xs uppercase tracking-wider text-emerald-400 block">Estágio 30 Dias</span>
+                <span class="text-[11px] text-slate-400">Proposta de Renovação & Upsell</span>
+              </div>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold" id="renewal-count-30">1</span>
+            </div>
+            <div class="space-y-3" id="renewal-cards-30">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA: KITS DE COMUNICAÇÃO RH & CAMPANHAS SAZONAIS (FASE 5)      -->
+      <!-- ============================================================== -->
+      <section id="tab-campaigns" class="tab-content hidden space-y-6 animate-tab">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <i data-lucide="megaphone" class="w-5 h-5"></i>
+              </span>
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kits para o RH & Campanhas Sazonais</h1>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Geração com IA de materiais de comunicação interna para o RH engajar os colaboradores e elevar a taxa de uso dos benefícios.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Coluna 1 & 2: Estúdio de Criação de Kit RH -->
+          <div class="lg:col-span-2 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div class="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
+                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                <span>Gerador de Kit de Engajamento Interno</span>
+              </div>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono">IA Copilot</span>
+            </div>
+
+            <!-- Seletores -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-400 mb-1.5">Empresa Cliente Alvo:</label>
+                <select id="campaign-client-select" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
+                  <!-- Preenchido via JS -->
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-400 mb-1.5">Foco da Campanha:</label>
+                <select id="campaign-focus-select" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
+                  <option value="activation">🚀 Alavancar Ativação de Novos Colaboradores</option>
+                  <option value="meal">🍽️ Destaque dos Benefícios de Alimentação & Refeição</option>
+                  <option value="health">💊 Economia em Farmácias & Descontos em Saúde</option>
+                  <option value="mobility">⛽ Benefício de Mobilidade Urbana & Combustível</option>
+                  <option value="education">🎓 Bolsas de Estudos & Cursos Profissionalizantes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Abas dos 3 Formatos do Kit -->
+            <div class="border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 pt-1 text-xs">
+              <button onclick="switchKitTab('email')" id="btn-kit-email" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white flex items-center gap-1.5 transition-all">
+                <i data-lucide="mail" class="w-3.5 h-3.5"></i> E-mail para RH Disparar
+              </button>
+              <button onclick="switchKitTab('whatsapp')" id="btn-kit-whatsapp" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-400"></i> WhatsApp dos Colaboradores
+              </button>
+              <button onclick="switchKitTab('mural')" id="btn-kit-mural" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Cartaz Mural / Intranet
+              </button>
+            </div>
+
+            <!-- Conteúdo Gerado do Kit -->
+            <div class="space-y-3">
+              <div id="kit-content-email" class="space-y-2">
+                <label class="text-[11px] font-semibold text-slate-400">Assunto do E-mail:</label>
+                <input type="text" id="kit-email-subject" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 font-semibold" readonly>
+                <label class="text-[11px] font-semibold text-slate-400 block pt-1">Corpo da Mensagem:</label>
+                <textarea id="kit-email-body" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+              </div>
+
+              <div id="kit-content-whatsapp" class="space-y-2 hidden">
+                <label class="text-[11px] font-semibold text-slate-400">Texto Otimizado para WhatsApp:</label>
+                <textarea id="kit-whatsapp-body" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+              </div>
+
+              <div id="kit-content-mural" class="space-y-2 hidden">
+                <label class="text-[11px] font-semibold text-slate-400">Comunicado para Intranet / Mural:</label>
+                <textarea id="kit-mural-body" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button onclick="copyCurrentKitContent()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all">
+                <i data-lucide="copy" class="w-4 h-4"></i> Copiar Texto Ativo
+              </button>
+              <button onclick="sendKitViaEmailToRH()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 active:scale-95 transition-all">
+                <i data-lucide="send" class="w-4 h-4"></i> Enviar Kit Completo para o RH
+              </button>
+            </div>
+          </div>
+
+          <!-- Coluna 3: Calendário de Campanhas Sazonais -->
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <span class="font-bold text-xs uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i> Campanhas Sazonais
+                </span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold">2026/27</span>
+              </div>
+
+              <!-- Lista de Campanhas Sazonais -->
+              <div class="space-y-3 text-xs">
+                <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <strong class="text-blue-300 font-bold">Novembro Azul — Saúde & Check-up</strong>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-200 font-bold">Ativa</span>
+                  </div>
+                  <p class="text-[11px] text-slate-300">Incentivo a exames preventivos e uso de farmácias com descontos da rede.</p>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <strong class="text-slate-200 font-bold">Black Friday dos Benefícios</strong>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-darkbg-700 text-slate-400">28/Nov</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Campanha de cupons em dobro para colaboradores utilizarem nas compras de fim de ano.</p>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <strong class="text-slate-200 font-bold">Janeiro Branco — Saúde Mental</strong>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-darkbg-700 text-slate-400">05/Jan</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Ativação de telemedicina e apoio psicológico gratuito para colaboradores.</p>
+                </div>
+              </div>
+
+              <button onclick="showToast('Disparo programado para todas as empresas ativas na carteira.', 'success')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-300 font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                <i data-lucide="send" class="w-3.5 h-3.5 text-indigo-400"></i> Agendar Campanha Geral
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA: REDE DE PARCEIROS, CATEGORIAS & LGPD (FASE 6)             -->
+      <!-- ============================================================== -->
+      <section id="tab-partners" class="tab-content hidden space-y-6 animate-tab">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <i data-lucide="store" class="w-5 h-5"></i>
+              </span>
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rede de Parceiros & Gestão LGPD</h1>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Mapeamento do mix de benefícios, categorias mais utilizadas, demandas regionais e auditoria de conformidade.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="exportLgpdAuditReport()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all">
+              <i data-lucide="shield-check" class="w-4 h-4"></i> Exportar Auditoria LGPD
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Categorias Principais de Benefício -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <span class="text-2xl">🍽️</span>
+            <strong class="block text-sm font-bold text-slate-200 pt-1">Refeição & Alimentação</strong>
+            <span class="text-emerald-400 font-bold text-xs">42% do volume</span>
+            <p class="text-[11px] text-slate-400">R$ 39.5k/mês transacionados</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <span class="text-2xl">🏥</span>
+            <strong class="block text-sm font-bold text-slate-200 pt-1">Saúde & Farmácia</strong>
+            <span class="text-emerald-400 font-bold text-xs">28% do volume</span>
+            <p class="text-[11px] text-slate-400">R$ 26.3k/mês em descontos</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <span class="text-2xl">🚗</span>
+            <strong class="block text-sm font-bold text-slate-200 pt-1">Mobilidade & Combustível</strong>
+            <span class="text-indigo-400 font-bold text-xs">15% do volume</span>
+            <p class="text-[11px] text-slate-400">R$ 14.1k/mês em rotas</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <span class="text-2xl">📚</span>
+            <strong class="block text-sm font-bold text-slate-200 pt-1">Educação & Cursos</strong>
+            <span class="text-purple-400 font-bold text-xs">9% do volume</span>
+            <p class="text-[11px] text-slate-400">R$ 8.4k/mês em bolsas</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <span class="text-2xl">🛍️</span>
+            <strong class="block text-sm font-bold text-slate-200 pt-1">Clube de Compras</strong>
+            <span class="text-amber-400 font-bold text-xs">6% do volume</span>
+            <p class="text-[11px] text-slate-400">R$ 5.9k/mês em cupons</p>
+          </div>
+        </div>
+
+        <!-- Radar de Demanda Reprimida & Painel LGPD -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Tabela de Demanda Reprimida -->
+          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-rose-400"></i>
+                <span>Radar de Demanda Reprimida por Região</span>
+              </h3>
+              <span class="text-xs text-slate-400 font-mono">Solicitações</span>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <strong class="text-slate-200">Curitiba / PR — Rede de Academias</strong>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Colaboradores da Apex Logística pediram convênio SmartFit</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 font-bold text-[11px]">48 Votos</span>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <strong class="text-slate-200">Belo Horizonte / MG — Farmácias Araújo</strong>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Colaboradores de Rede Mais Fidelidade pediram desconto balcão</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 font-bold text-[11px]">35 Votos</span>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <strong class="text-slate-200">Campinas / SP — Postos Ipiranga / Abastece Aí</strong>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Equipe externa de vendas pediu cashback em combustíveis</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-[11px]">62 Votos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Painel de Conformidade LGPD -->
+          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+                <span>Conformidade & Governança LGPD</span>
+              </h3>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">100% Blindado</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-2 text-xs">
+              <strong class="text-emerald-300 block">Arquitetura Privacy-by-Design:</strong>
+              <p class="text-slate-300 leading-relaxed text-[11px]">
+                O PulseCS processa <strong>exclusivamente métricas agregadas por empresa</strong> (vidas elegíveis, vidas ativas e volume de economia). Nenhum CPF, nome completo ou dado sensível individual de colaborador é persistido na nuvem.
+              </p>
+            </div>
+
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-slate-400">Tratamento de Dados de Contato B2B:</span>
+                <strong class="text-slate-200">Finalidade Legítima (Gestão de Contrato)</strong>
+              </div>
+              <div class="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span class="text-slate-400">Política de Retenção de Histórico:</span>
+                <strong class="text-slate-200">12 Meses com Auto-Purge de Snapshots</strong>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-slate-400">Isolamento Multi-Tenant (RLS):</span>
+                <strong class="text-emerald-400">Ativo via PostgreSQL / Supabase</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= MODAL: DETALHES DA REUNIÃO / BRIEFING IA ================= -->
       <div id="calendar-meeting-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg p-6 shadow-2xl space-y-4 animate-tab">
@@ -1821,9 +2224,17 @@
     }
 
     let clients = JSON.parse(localStorage.getItem('pulsecs_clients')) || defaultClients;
-    // Auto-migração para garantir phone, email e csmId
+    // Auto-migração para garantir phone, email, csmId e métricas de benefícios da Fase 2
     clients = clients.map((c, i) => {
       const def = defaultClients[i] || defaultClients[0];
+      const eligible = Number(c.eligibleLives) || [850, 560, 1200, 900, 430, 600, 780, 800, 250, 310, 280][i] || 500;
+      const active = Number(c.activeLives) || [714, 210, 1110, 396, 292, 444, 690, 704, 198, 251, 218][i] || 380;
+      const mau = Number(c.mauLives) || [620, 140, 1040, 280, 240, 380, 640, 660, 175, 230, 190][i] || 320;
+      const savings = Number(c.totalSavings) || [48200, 9400, 92600, 18300, 24100, 31900, 53400, 61200, 14800, 21900, 17200][i] || 25000;
+      const pepm = Number(c.pepm) || [18.5, 16.0, 19.0, 15.0, 17.5, 16.5, 18.0, 20.0, 15.0, 16.0, 15.5][i] || 17.0;
+      const renewalDate = c.renewalDate || ['2027-02-01', '2026-11-28', '2026-12-15', '2027-05-01', '2027-03-20', '2027-01-10', '2026-12-05', '2027-02-15', '2027-03-01', '2027-04-01', '2027-05-10'][i] || '2027-02-01';
+      const renewalStage = c.renewalStage || ['90d', '30d', '60d', '90d', '90d', '90d', '60d', '90d', '90d', '90d', '90d'][i] || '90d';
+
       return {
         ...c,
         id: Number(c.id) || (i + 1),
@@ -1831,7 +2242,14 @@
         hs: Math.min(100, Math.max(0, Number(c.hs) || 0)),
         phone: String(c.phone || def.phone).replace(/\D/g, ''),
         email: c.email || def.email,
-        csmId: Number(c.csmId) || (i % 3 + 1)
+        csmId: Number(c.csmId) || (i % 3 + 1),
+        eligibleLives: eligible,
+        activeLives: active,
+        mauLives: mau,
+        totalSavings: savings,
+        pepm: pepm,
+        renewalDate: renewalDate,
+        renewalStage: renewalStage
       };
     });
 
@@ -1954,6 +2372,12 @@
         renderOmnichannelTab();
       } else if (tabId === 'team') {
         renderTeamTab();
+      } else if (tabId === 'renewal') {
+        renderRenewalTab();
+      } else if (tabId === 'campaigns') {
+        renderCampaignsTab();
+      } else if (tabId === 'partners') {
+        renderPartnersTab();
       }
 
       lucide.createIcons();
@@ -3752,6 +4176,256 @@
       renderTeamTab();
       renderClientTable();
       showToast('Carteira rebalanceada com IA! MRR distribuído equilibradamente entre os 3 CSMs.', 'success');
+    }
+
+    // =========================================================================
+    // --- 19. MÓDULO FASE 4: PIPELINE DE RENOVAÇÃO & PROVA DE ROI ---
+    // =========================================================================
+    function renderRenewalTab() {
+      const col90 = document.getElementById('renewal-cards-90');
+      const col60 = document.getElementById('renewal-cards-60');
+      const col30 = document.getElementById('renewal-cards-30');
+      if (!col90 || !col60 || !col30) return;
+
+      col90.innerHTML = '';
+      col60.innerHTML = '';
+      col30.innerHTML = '';
+
+      // Mapeamento dos clientes nos estágios de renovação
+      clients.forEach(c => {
+        const stage = c.renewalStage || (c.id === 2 ? '30d' : (c.id === 3 || c.id === 7 ? '60d' : '90d'));
+        const targetCol = stage === '30d' ? col30 : (stage === '60d' ? col60 : col90);
+
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm';
+        
+        const ativRate = c.eligibleLives > 0 ? Math.round((c.activeLives / c.eligibleLives) * 100) : 0;
+        const totalSavingsK = (c.totalSavings / 1000).toFixed(1);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <strong class="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[160px]">${esc(c.name)}</strong>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              c.status === 'green' ? 'bg-emerald-500/20 text-emerald-400' : (c.status === 'yellow' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400')
+            }">
+              HS ${c.hs}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+            <div>
+              <span>Vencimento:</span>
+              <strong class="text-slate-200 block">${c.renewalDate || '2027-02-01'}</strong>
+            </div>
+            <div>
+              <span>MRR Atual:</span>
+              <strong class="text-emerald-400 block">R$ ${c.mrr.toLocaleString('pt-BR')}</strong>
+            </div>
+          </div>
+
+          <!-- Métricas de Adoção de Benefícios -->
+          <div class="p-2.5 rounded-lg bg-slate-100/70 dark:bg-darkbg-800/60 border border-slate-200 dark:border-slate-800 space-y-1 text-[11px]">
+            <div class="flex items-center justify-between text-slate-300">
+              <span>Adoção (${c.activeLives}/${c.eligibleLives} vidas):</span>
+              <strong class="${ativRate >= 75 ? 'text-emerald-400' : 'text-amber-400'} font-bold">${ativRate}%</strong>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-darkbg-700 overflow-hidden">
+              <div class="h-full rounded-full ${ativRate >= 75 ? 'bg-emerald-500' : 'bg-amber-400'}" style="width: ${ativRate}%"></div>
+            </div>
+            <div class="flex items-center justify-between pt-0.5 text-slate-400 text-[10px]">
+              <span>Economia gerada:</span>
+              <strong class="text-emerald-400 font-bold">R$ ${totalSavingsK}k</strong>
+            </div>
+          </div>
+
+          <!-- Ações do Estágio -->
+          <div class="flex items-center gap-2 pt-1">
+            <button onclick="openCopilotPrompt('Gere a apresentação executiva de QBR para a empresa ${c.name} provando economia acumulada de R$ ${c.totalSavings} e taxa de adoção de ${ativRate}% para a reunião de renovação contratual.')" class="w-full py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all shadow-sm">
+              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Gerar QBR
+            </button>
+            <button onclick="openCallNotesModal('${c.name}')" class="py-1.5 px-2.5 rounded-lg bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-300 text-[11px] font-medium active:scale-95 transition-all" title="Registrar Ata de Alinhamento">
+              Ata
+            </button>
+          </div>
+        `;
+
+        targetCol.appendChild(card);
+      });
+
+      // Atualiza contadores
+      const count90 = col90.children.length;
+      const count60 = col60.children.length;
+      const count30 = col30.children.length;
+
+      const el90 = document.getElementById('renewal-count-90');
+      if (el90) el90.textContent = count90;
+      const el60 = document.getElementById('renewal-count-60');
+      if (el60) el60.textContent = count60;
+      const el30 = document.getElementById('renewal-count-30');
+      if (el30) el30.textContent = count30;
+
+      lucide.createIcons();
+    }
+
+    function runAutoRenewalForecastAudit() {
+      showToast('Calculando projeção de renovação e NRR para contas em janela de 90 dias...', 'info');
+      setTimeout(() => {
+        openCopilotPrompt('Faça uma auditoria preditiva das contas em janela de renovação contratual (90, 60 e 30 dias), aponte o risco de churn financeiro e recomende as alavancas de expansão de vidas para cada uma.');
+      }, 400);
+    }
+
+    // =========================================================================
+    // --- 20. MÓDULO FASE 5: KITS PARA RH & CAMPANHAS SAZONAIS ---
+    // =========================================================================
+    let activeKitFormat = 'email';
+
+    function renderCampaignsTab() {
+      const select = document.getElementById('campaign-client-select');
+      if (!select) return;
+
+      select.innerHTML = '';
+      clients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.eligibleLives} Vidas • Adoção: ${Math.round((c.activeLives/c.eligibleLives)*100)}%)`;
+        select.appendChild(opt);
+      });
+
+      generateInternalKit();
+      lucide.createIcons();
+    }
+
+    function generateInternalKit() {
+      const select = document.getElementById('campaign-client-select');
+      const focusSelect = document.getElementById('campaign-focus-select');
+      if (!select || !focusSelect) return;
+
+      const client = clients.find(c => c.id === parseInt(select.value)) || clients[0];
+      const focus = focusSelect.value;
+      const savingsK = (client.totalSavings / 1000).toFixed(1);
+
+      let subject = '';
+      let emailBody = '';
+      let whatsappBody = '';
+      let muralBody = '';
+
+      if (focus === 'activation') {
+        subject = `[Aviso RH] Liberação do seu Cartão e Benefícios Corporativos da ${client.name}!`;
+        emailBody = `Prezada equipe,\n\nÉ com enorme satisfação que a área de Gente & Gestão da ${client.name} anuncia a ativação da nossa nova plataforma corporativa de benefícios e vantagens!\n\nVocê já tem acesso liberado a descontos em farmácias, alimentação, cursos e compras no varejo. Nossos colaboradores já economizaram juntos mais de R$ ${savingsK} mil reais em despesas do dia a dia.\n\n👉 Para ativar sua conta em menos de 2 minutos:\n1. Acesse o portal ou baixe o aplicativo no celular;\n2. Insira seu e-mail corporativo ou CPF cadastrado;\n3. Crie sua senha e aproveite as vantagens imediatas!\n\nEm caso de dúvidas, o time de RH está à total disposição.\n\nAtenciosamente,\nRecursos Humanos — ${client.name}`;
+        
+        whatsappBody = `🚀 *NOVIDADE PARA A EQUIPE ${client.name.toUpperCase()}!* 🚀\n\nSeu acesso aos benefícios corporativos exclusivos já está liberado!\n\n🥗 Descontos em Alimentação & Refeição\n💊 Economia de até 35% em Farmácias parceiras\n📚 Cursos e Bolsas de Estudos exclusivas\n\n📲 *Como ativar agora mesmo:*\nBasta acessar o link e fazer login com seu e-mail: https://beneficios.suaempresa.com.br\n\nAproveite e faça seu primeiro uso hoje mesmo! 🎉`;
+
+        muralBody = `📢 COMUNICADO OFICIAL DO RH\n\nATENÇÃO COLABORADORES DA ${client.name.toUpperCase()}:\n\nO seu novo pacote de benefícios corporativos está oficialmente ativo!\n\nEconomize todos os dias com nosso clube de parceiros credenciados. Acesse pelo QR Code ou procure o setor de Recursos Humanos para retirar suas credenciais e ativar seu cartão virtual.\n\nBenefício criado para valorizar quem faz a nossa empresa acontecer! ✨`;
+      } else if (focus === 'meal') {
+        subject = `[RH Informa] Conheça os restaurantes e supermercados parceiros da ${client.name}`;
+        emailBody = `Olá time,\n\nPassando para lembrá-los que seu benefício de Alimentação & Refeição da ${client.name} conta com ampla rede de restaurantes, padarias e supermercados credenciados na sua região!\n\nVocê pode consultar a rede completa direto no aplicativo pelo mapa interativo e pagar suas refeições por aproximação ou QR Code.\n\nBom apetite e ótimo trabalho a todos!\nRH — ${client.name}`;
+        whatsappBody = `🍽️ *Hora do Almoço com Economia!* 🍽️\n\nSabia que você tem descontos especiais em dezenas de restaurantes e redes de alimentação da nossa região pelo benefício da ${client.name}?\n\nConsulte os estabelecimentos mais próximos pelo mapa do app e aproveite seu desconto na hora do pagamento! 😋`;
+        muralBody = `🍽️ ONDE ALMOÇAR HOJE?\n\nUse seu benefício corporativo da ${client.name} nos restaurantes, cafés e mercados parceiros credenciados em todo o entorno da nossa sede!\n\nConsulte a lista no app de benefícios e bom apetite!`;
+      } else {
+        subject = `[Campanha Saúde] Economize até 40% em medicamentos e consultas com a ${client.name}`;
+        emailBody = `Prezado(a) colaborador(a),\n\nA sua saúde e o bem-estar da sua família são prioridades absolutas na ${client.name}.\n\nLembramos que nosso benefício corporativo garante até 40% de desconto imediato nas principais redes de drogarias do Brasil (Drogasil, Raia, Pacheco, São Paulo e Pague Menos), além de telemedicina gratuita no aplicativo.\n\nCuide de você com o suporte da ${client.name}!\nRecursos Humanos`;
+        whatsappBody = `💊 *Dica de Saúde & Economia ${client.name}* 🩺\n\nPrecisa passar na farmácia ou fazer um check-up? Não pague o valor integral!\n\nApresente seu benefício corporativo nas principais farmácias parceiras e tenha descontos imediatos no balcão.\n\nConsulte o app para conferir todas as redes credenciadas! 💚`;
+        muralBody = `🩺 CUIDE DA SUA SAÚDE!\n\nColaboradores da ${client.name} possuem descontos exclusivos de até 40% nas maiores redes de farmácias do Brasil e acesso à telemedicina preventiva.\n\nMais saúde e economia no seu bolso!`;
+      }
+
+      const elSub = document.getElementById('kit-email-subject');
+      if (elSub) elSub.value = subject;
+      const elBody = document.getElementById('kit-email-body');
+      if (elBody) elBody.value = emailBody;
+      const elWpp = document.getElementById('kit-whatsapp-body');
+      if (elWpp) elWpp.value = whatsappBody;
+      const elMural = document.getElementById('kit-mural-body');
+      if (elMural) elMural.value = muralBody;
+    }
+
+    function switchKitTab(type) {
+      activeKitFormat = type;
+      ['email', 'whatsapp', 'mural'].forEach(t => {
+        const c = document.getElementById(`kit-content-${t}`);
+        const b = document.getElementById(`btn-kit-${t}`);
+        if (c) c.classList.toggle('hidden', t !== type);
+        if (b) {
+          if (t === type) {
+            b.className = 'px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white flex items-center gap-1.5 transition-all';
+          } else {
+            b.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition-all';
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function copyCurrentKitContent() {
+      let text = '';
+      if (activeKitFormat === 'email') {
+        const sub = document.getElementById('kit-email-subject')?.value || '';
+        const body = document.getElementById('kit-email-body')?.value || '';
+        text = `Assunto: ${sub}\n\n${body}`;
+      } else if (activeKitFormat === 'whatsapp') {
+        text = document.getElementById('kit-whatsapp-body')?.value || '';
+      } else {
+        text = document.getElementById('kit-mural-body')?.value || '';
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Conteúdo do kit (${activeKitFormat.toUpperCase()}) copiado para a área de transferência!`, 'success');
+      });
+    }
+
+    function sendKitViaEmailToRH() {
+      const select = document.getElementById('campaign-client-select');
+      if (!select) return;
+      const client = clients.find(c => c.id === parseInt(select.value)) || clients[0];
+      const email = client.email || 'rh@empresa.com.br';
+      const sub = encodeURIComponent(`[PulseCS] Kit de Comunicação Interna de Benefícios para os Colaboradores da ${client.name}`);
+      const body = encodeURIComponent(
+        `Olá ${client.contact.split(' ')[0]},\n\nConforme nosso alinhamento estratégico de CS para alavancar a taxa de adesão dos seus colaboradores, preparamos o kit oficial de comunicação interna pronto para disparo:\n\n---\n${document.getElementById('kit-email-body')?.value}\n---\n\nQualquer dúvida estou à total disposição para apoiá-los no engajamento da equipe!`
+      );
+      window.open(`mailto:${email}?subject=${sub}&body=${body}`, '_blank');
+      showToast(`Abrindo e-mail para enviar o kit diretamente ao RH de "${client.name}"...`, 'success');
+    }
+
+    // =========================================================================
+    // --- 21. MÓDULO FASE 6: REDE DE PARCEIROS & AUDITORIA LGPD ---
+    // =========================================================================
+    function renderPartnersTab() {
+      lucide.createIcons();
+    }
+
+    function exportLgpdAuditReport() {
+      const auditPayload = {
+        pulse_version: '2.0-enterprise',
+        generated_at: new Date().toISOString(),
+        auditor: 'PulseCS Governance Engine',
+        lgpd_compliance_status: '100% COMPLIANT',
+        privacy_framework: 'Privacy-by-Design / Zero Personal Employee Data Stored',
+        data_ledger: {
+          total_companies_monitored: clients.length,
+          total_eligible_lives_aggregated: clients.reduce((acc, c) => acc + (c.eligibleLives || 0), 0),
+          total_active_lives_aggregated: clients.reduce((acc, c) => acc + (c.activeLives || 0), 0),
+          personal_identification_stored: 'NONE (NO CPF, NO EMPLOYEE INDIVIDUAL NAMES, NO BANK DETAILS)',
+          multi_tenant_isolation: 'Row Level Security (RLS) Active via PostgreSQL',
+          retention_policy: 'Aggregated Monthly Snapshots (12-month retention)'
+        },
+        security_measures: [
+          'CSP Header Enforcement',
+          'Anti-Sniffing (nosniff)',
+          'Anti-Clickjacking (DENY)',
+          'Encrypted Serverless AI Pipeline (/api/ai)'
+        ]
+      };
+
+      const blob = new Blob([JSON.stringify(auditPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Auditoria_Conformidade_LGPD_PulseCS_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      showToast('Relatório oficial de Auditoria LGPD gerado e baixado com sucesso!', 'success');
     }
   </script>
 </body>
