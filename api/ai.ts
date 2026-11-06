@@ -1,99 +1,96 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { applyCors, bearerToken, getSupabaseUserId, rateLimited } from './_lib/security';
+
+const MAX_PROMPT_CHARS = 4000;
+
+const PROVIDERS = {
+  groq: {
+    endpoint: 'https://api.groq.com/openai/v1',
+    env: 'GROQ_API_KEY',
+    models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+  },
+  gemini: {
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    env: 'GEMINI_API_KEY',
+    models: ['gemini-2.5-flash']
+  },
+  openai: {
+    endpoint: 'https://api.openai.com/v1',
+    env: 'OPENAI_API_KEY',
+    models: ['gpt-4o-mini']
+  }
+} as const;
+
+type ProviderName = keyof typeof PROVIDERS;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Configuração de CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  // 1. Autenticação: exige sessão válida do Supabase (falha fechada se não configurado)
+  const userId = await getSupabaseUserId(bearerToken(req));
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // 2. Limite de uso por usuário: 20 chamadas / minuto
+  if (rateLimited(`ai:${userId}`, 20, 60_000)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'Too Many Requests' });
+  }
+
+  // 3. Validação de entrada
+  const body = (req.body && typeof req.body === 'object') ? req.body : {};
+  const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
+  if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+  if (prompt.length > MAX_PROMPT_CHARS) {
+    return res.status(413).json({ error: `Prompt exceeds ${MAX_PROMPT_CHARS} characters` });
+  }
+
+  const provider: ProviderName = (body.provider in PROVIDERS ? body.provider : 'groq') as ProviderName;
+  const cfg = PROVIDERS[provider];
+  const models = cfg.models as readonly string[];
+  const model = typeof body.model === 'string' && models.includes(body.model) ? body.model : models[0];
+
+  const key = process.env[cfg.env];
+  if (!key) {
+    return res.status(503).json({ error: `Provider "${provider}" is not configured` });
+  }
+
   try {
-    const { prompt, provider = 'groq', model } = req.body || {};
-
-    if (!prompt) {
-      return res.status(400).json({ error: 'Prompt is required' });
-    }
-
-    // 1. Identificar chaves seguras de ambiente
-    const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY;
-    const openaiKey = process.env.OPENAI_API_KEY;
-
-    let targetEndpoint = 'https://api.groq.com/openai/v1';
-    let targetKey = groqKey;
-    let targetModel = model || 'llama-3.3-70b-versatile';
-
-    if (provider === 'gemini' && geminiKey) {
-      targetEndpoint = 'https://generativelanguage.googleapis.com/v1beta/openai';
-      targetKey = geminiKey;
-      targetModel = model || 'gemini-2.5-flash';
-    } else if (provider === 'openai' && openaiKey) {
-      targetEndpoint = 'https://api.openai.com/v1';
-      targetKey = openaiKey;
-      targetModel = model || 'gpt-4o-mini';
-    } else if (provider === 'groq' && groqKey) {
-      targetEndpoint = 'https://api.groq.com/openai/v1';
-      targetKey = groqKey;
-      targetModel = model || 'llama-3.3-70b-versatile';
-    }
-
-    // Se houver chave no servidor Vercel, faz a chamada real
-    if (targetKey) {
-      const response = await fetch(`${targetEndpoint}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${targetKey}`
-        },
-        body: JSON.stringify({
-          model: targetModel,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Você é o Pulse Copilot, assistente inteligente de Customer Success especializado em Benefícios Corporativos e retenção de contas B2B. Forneça respostas práticas, executivas e orientadas a dados de adesão e ROI.'
-            },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.3
-        })
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        return res.status(response.status).json({ error: 'Upstream AI Provider Error', details: errText });
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || 'Sem resposta gerada pelo modelo.';
-      return res.status(200).json({
-        content,
-        provider,
-        model: targetModel,
-        cached: false
-      });
-    }
-
-    // Fallback Simulado Pro caso não haja chave cadastrada nas Env Vars da Vercel
-    return res.status(200).json({
-      content: `[Pulse Copilot Serverless Engine]\nDiagnóstico executivo: O cliente requer alinhamento prioritário com o RH para destravar o cadastro de novos colaboradores e elevar o engajamento com os benefícios de maior margem. Proposta de ação rápida aprovada para envio.`,
-      provider: 'simulated-serverless',
-      model: 'pulsecs-lpu-fallback',
-      note: 'Para usar inferência real de alta velocidade, cadastre GROQ_API_KEY no painel da Vercel (Settings > Environment Variables).'
+    const upstream = await fetch(`${cfg.endpoint}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(25_000),
+      body: JSON.stringify({
+        model,
+        max_tokens: 1000,
+        temperature: 0.3,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Você é o Pulse Copilot, assistente de Customer Success especializado em Benefícios Corporativos e retenção de contas B2B. Forneça respostas práticas, executivas e orientadas a dados de adesão e ROI.'
+          },
+          { role: 'user', content: prompt }
+        ]
+      })
     });
-  } catch (error: any) {
-    console.error('AI Serverless Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message });
+
+    if (!upstream.ok) {
+      // Não repassa o corpo do erro do provedor ao cliente; registra só o status.
+      console.error('AI upstream error', provider, upstream.status);
+      return res.status(502).json({ error: 'AI provider error' });
+    }
+
+    const data = await upstream.json();
+    const content = data.choices?.[0]?.message?.content || 'Sem resposta gerada pelo modelo.';
+    return res.status(200).json({ content, provider, model });
+  } catch (err) {
+    console.error('AI handler error', (err as Error)?.name);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }

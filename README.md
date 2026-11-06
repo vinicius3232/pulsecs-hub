@@ -107,3 +107,12 @@ O projeto possui configuração pronta no `vercel.json`:
 ## 🔒 Segurança e Privacidade
 - **Zero-Nominal Data (LGPD):** Não armazena CPF, nomes ou dados sensíveis individuais de funcionários das empresas clientes.
 - **Fail-Safe Serverless:** Se as chaves de API não forem configuradas no Vercel, o sistema faz fallback elegante para o Copilot Pro Simulado local, garantindo operação contínua sem interrupções.
+
+---
+
+## 🔒 Endpoints `/api` (variáveis de ambiente)
+Copie `.env.example` e cadastre os valores em **Vercel > Settings > Environment Variables**.
+
+- `POST /api/ai`: exige `Authorization: Bearer <JWT do Supabase Auth>`; 20 chamadas/min por usuário; provedores e modelos em allowlist; sem CORS aberto (use `ALLOWED_ORIGINS` para liberar origens).
+- `POST /api/salez-webhook`: exige o cabeçalho `x-webhook-secret` (ou `Authorization: Bearer`) igual a `SALEZ_WEBHOOK_SECRET`; grava a empresa em `Kickoff` no Supabase via service role (somente servidor).
+- Sem as variáveis configuradas, ambos respondem 401/503 (falham fechados).
