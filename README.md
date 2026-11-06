@@ -116,3 +116,14 @@ Copie `.env.example` e cadastre os valores em **Vercel > Settings > Environment 
 - `POST /api/ai`: exige `Authorization: Bearer <JWT do Supabase Auth>`; 20 chamadas/min por usuário; provedores e modelos em allowlist; sem CORS aberto (use `ALLOWED_ORIGINS` para liberar origens).
 - `POST /api/salez-webhook`: exige o cabeçalho `x-webhook-secret` (ou `Authorization: Bearer`) igual a `SALEZ_WEBHOOK_SECRET`; grava a empresa em `Kickoff` no Supabase via service role (somente servidor).
 - Sem as variáveis configuradas, ambos respondem 401/503 (falham fechados).
+
+---
+
+## ⚙️ Event log + motor de automação
+Padrão adaptado do DeskcommCRM (MIT): triggers do Postgres só gravam em `event_log`; um cron drena a fila.
+
+- **Aplicar:** `supabase/schema.sql` e depois `supabase/migrations/0002_event_log_automation.sql` (idempotente).
+- **Eventos:** `company.created`, `company.health_changed`, `company.phase_changed` (triggers) e `company.renewal_due` (90/60/30 dias) e `company.rh_inactive` (14 dias sem login), emitidos por `fn_emit_time_events()` sem duplicar.
+- **Regras:** tabela `automation_rules` (QUANDO / SE em AND / ENTÃO). Condições: `eq neq contains gt gte lt lte`. Templates `{{company.name}}`. Ação disponível: `create_task` (no máximo 1 tarefa aberta por regra+empresa). 4 regras padrão já vêm na migration.
+- **Execução:** `GET /api/cron/drain-events` (Vercel Cron, 1x/dia no plano Hobby; exige `CRON_SECRET`). Falha → retry com backoff 2^n min; 5 falhas → `dead` + tarefa crítica para o Head.
+- **Testes:** `npm test` (lógica do motor).
