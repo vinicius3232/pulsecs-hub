@@ -80,7 +80,7 @@ Kanban estruturado com base em marcos de entrega contínua para empresas de bene
    git clone https://github.com/vinicius3232/pulsecs-hub.git
    cd pulsecs-hub
    ```
-2. Abra o arquivo `index.html` em qualquer navegador ou use um servidor local:
+2. Abra o arquivo `public/index.html` em qualquer navegador ou use um servidor local:
    ```bash
    npx serve .
    ```
