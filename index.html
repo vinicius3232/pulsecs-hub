@@ -3044,6 +3044,38 @@
       chatBody.appendChild(userMsg);
       chatBody.scrollTop = chatBody.scrollHeight;
 
+      // 1. Tentativa Segura: Serverless Function /api/ai na Vercel (Sem expor chaves no cliente)
+      try {
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'p-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 border border-slate-200 dark:border-slate-700/60 text-slate-400 text-xs flex items-center gap-2';
+        loadingMsg.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-400"></i><span>Consultando Copilot Serverless...</span>';
+        chatBody.appendChild(loadingMsg);
+        lucide.createIcons();
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        const serverlessRes = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: promptText,
+            provider: appConfig.aiProvider,
+            model: appConfig.aiModel
+          })
+        });
+
+        if (serverlessRes.ok) {
+          const sData = await serverlessRes.json();
+          loadingMsg.remove();
+          if (sData.content) {
+            renderCopilotBotReply(esc(sData.content).replace(/\n/g, '<br>'), `${sData.model || sData.provider} (Vercel Serverless)`);
+            return;
+          }
+        }
+        loadingMsg.remove();
+      } catch (e) {
+        // Fallback para execução local/offline se não estiver rodando sob a Vercel
+      }
+
       if (appConfig.aiProvider !== 'mock' && appConfig.aiKey && appConfig.aiEndpoint) {
         const loadingMsg = document.createElement('div');
         loadingMsg.className = 'p-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 border border-slate-200 dark:border-slate-700/60 text-slate-400 text-xs flex items-center gap-2';
