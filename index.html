@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,39 +8,35 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    const PETROL = { 50: '#eef7f6', 100: '#d4ecea', 200: '#aadbd7', 300: '#78c2bd', 400: '#43a5a0', 500: '#1f8a87', 600: '#0f6f70', 700: '#0c5859', 800: '#0a4546', 900: '#083536', 950: '#042021' };
+    const WARM = { 50: '#f7f7f5', 100: '#efeeea', 200: '#e2e1db', 300: '#cbc9c0', 400: '#75736a', 500: '#5f5d55', 600: '#4b4a43', 700: '#3a3935', 800: '#292825', 900: '#1b1a18', 950: '#111110' };
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              200: '#c7d2fe',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              800: '#3730a3',
-              900: '#312e81',
-            },
+            // Verde-petróleo: cor única da marca. indigo/purple/blue apontam para ela,
+            // então todo o markup existente é repintado sem reescrever as telas.
+            brand: PETROL,
+            indigo: PETROL,
+            purple: PETROL,
+            blue: PETROL,
+            // Neutros quentes (substituem o slate azulado)
+            slate: WARM,
+            // Fundos do modo escuro: grafite levemente esverdeado, sem azul-marinho
             darkbg: {
-              950: '#070a13',
-              900: '#0b101d',
-              850: '#101728',
-              800: '#151f35',
-              750: '#1c2844',
-              700: '#233254',
-              600: '#334155'
+              950: '#0d0f0e',
+              900: '#131615',
+              850: '#191d1c',
+              800: '#202524',
+              750: '#292f2d',
+              700: '#333a38',
+              600: '#454c4a'
             }
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
             mono: ['JetBrains Mono', 'Fira Code', 'monospace']
-          },
-          boxShadow: {
-            'glow-indigo': '0 0 25px -4px rgba(99, 102, 241, 0.35)',
-            'glow-emerald': '0 0 25px -4px rgba(16, 185, 129, 0.35)',
-            'glow-rose': '0 0 25px -4px rgba(244, 63, 94, 0.35)',
           }
         }
       }
@@ -119,6 +115,61 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
     }
+    /* ===== Tema "Claro + verde-petróleo" ===== */
+    :root { --petrol: #0f6f70; --petrol-dark: #0c5859; --ink: #1b1a18; --muted: #5f5d55; --line: #e2e1db; }
+    body { font-feature-settings: "cv11", "ss03"; letter-spacing: -0.003em; }
+    /* Sem gradientes, brilhos, pulsos nem vidro: superfícies planas */
+    [class*="bg-gradient-to"] { background-image: none !important; background-color: var(--petrol) !important; }
+    [class*="bg-gradient-to"]:hover { background-color: var(--petrol-dark) !important; }
+    .bg-clip-text { background-image: none !important; background-color: transparent !important; color: var(--petrol-dark) !important; -webkit-text-fill-color: currentColor !important; }
+    .dark .bg-clip-text { color: #e8f4f3 !important; }
+    [class*="shadow-"] { box-shadow: 0 1px 2px rgba(27, 26, 24, .06) !important; }
+    .dark [class*="shadow-"] { box-shadow: none !important; }
+    .shadow-2xl { box-shadow: 0 16px 48px rgba(27, 26, 24, .18) !important; }
+    .animate-pulse { animation: none !important; }
+    .animate-ping { display: none !important; }
+    .backdrop-blur-md, .backdrop-blur-sm, .glass-panel { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+    /* Raios menores e mais sóbrios */
+    .rounded-2xl { border-radius: 12px !important; }
+    .rounded-xl { border-radius: 8px !important; }
+    .rounded-lg { border-radius: 6px !important; }
+    /* Tipografia: títulos firmes, números tabulares */
+    h2.text-2xl { font-weight: 650; letter-spacing: -0.02em; }
+    .font-extrabold { font-weight: 650; }
+    [id^="kpi-"], .font-mono { font-variant-numeric: tabular-nums; }
+    [id^="kpi-"] { letter-spacing: -0.02em; }
+    /* Cartões: borda fina quente, sem hover chamativo */
+    main .border-slate-200 { border-color: var(--line); }
+    .hover\:border-slate-700:hover { border-color: #cbc9c0; }
+    /* Modo claro: texto de status legível (as variantes -400 eram feitas para fundo escuro) */
+    html:not(.dark) .text-emerald-300, html:not(.dark) .text-emerald-400, html:not(.dark) .text-emerald-500 { color: #047857; }
+    html:not(.dark) .text-amber-300, html:not(.dark) .text-amber-400, html:not(.dark) .text-amber-500 { color: #b45309; }
+    html:not(.dark) .text-rose-300, html:not(.dark) .text-rose-400, html:not(.dark) .text-rose-500 { color: #be123c; }
+    html:not(.dark) .text-indigo-100, html:not(.dark) .text-indigo-200, html:not(.dark) .text-brand-100, html:not(.dark) .text-brand-200, html:not(.dark) .text-purple-200, html:not(.dark) .text-blue-200 { color: var(--petrol-dark); }
+    html:not(.dark) .text-brand-300, html:not(.dark) .text-brand-400, html:not(.dark) .text-indigo-300, html:not(.dark) .text-indigo-400, html:not(.dark) .text-purple-300, html:not(.dark) .text-purple-400, html:not(.dark) .text-blue-300, html:not(.dark) .text-blue-400 { color: var(--petrol-dark); }
+    html:not(.dark) .text-slate-100, html:not(.dark) .text-slate-200, html:not(.dark) .text-slate-300 { color: #3a3935; }
+    html:not(.dark) input, html:not(.dark) select, html:not(.dark) textarea { color: #1b1a18; }
+    html:not(.dark) .text-slate-400 { color: #75736a; }
+    .dark .text-slate-400 { color: #a9a79c; }
+    /* Etiquetas decorativas fora de contexto ficam discretas */
+    html:not(.dark) .bg-emerald-500\/10, html:not(.dark) .bg-emerald-500\/20 { background-color: #e3f3ec; }
+    html:not(.dark) .bg-amber-500\/10, html:not(.dark) .bg-amber-500\/20 { background-color: #fbf0dc; }
+    html:not(.dark) .bg-rose-500\/10, html:not(.dark) .bg-rose-500\/20 { background-color: #fbe6ea; }
+    html:not(.dark) .bg-indigo-500\/10, html:not(.dark) .bg-indigo-500\/20, html:not(.dark) .bg-purple-500\/20, html:not(.dark) .bg-blue-500\/20 { background-color: #e4f1f0; }
+    /* Painéis tingidos (eram 950/opacidade para fundo escuro): no claro viram petróleo bem suave */
+    html:not(.dark) [class*="bg-indigo-950"], html:not(.dark) [class*="bg-brand-950"], html:not(.dark) [class*="bg-blue-950"], html:not(.dark) [class*="bg-purple-950"] { background-color: #eef7f6 !important; }
+    html:not(.dark) [class*="border-indigo-500"], html:not(.dark) [class*="border-blue-500"], html:not(.dark) [class*="border-purple-500"] { border-color: #d4ecea !important; }
+    /* bg-darkbg-* sem variante dark: no claro vira superfície clara */
+    html:not(.dark) [class~="bg-darkbg-800"] { background-color: #efeeea; }
+    html:not(.dark) [class~="bg-darkbg-850"] { background-color: #ffffff; }
+    kbd { color: #d4ecea !important; }
+    .bg-brand-600, .bg-indigo-600, [class*="bg-gradient-to"] { color: #fff; }
+    /* Item ativo do menu: barra lateral petróleo, sem caixa contornada */
+    .nav-btn { position: relative; }
+    .nav-btn[aria-current="page"] { background-color: #e4f1f0 !important; border-color: transparent !important; color: var(--petrol-dark) !important; }
+    .dark .nav-btn[aria-current="page"] { background-color: rgba(67, 165, 160, .14) !important; color: #aadbd7 !important; }
+    .nav-btn[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--petrol); }
+    .dark .nav-btn[aria-current="page"]::before { background: #43a5a0; }
   </style>
 </head>
 
@@ -184,7 +235,7 @@
 
       <!-- Dark/Light Theme Toggle -->
       <button onclick="toggleTheme()" title="Alternar tema Claro / Escuro" class="p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-darkbg-850 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white active:scale-95 transition-all">
-        <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
+        <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
       </button>
 
       <!-- Notificações -->
@@ -205,7 +256,7 @@
       <div class="p-4 space-y-6 overflow-y-auto">
         <!-- SEÇÃO 1: GESTÃO DE CONTAS & AGENDA -->
         <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Gestão de Contas & Agenda</span>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Contas &amp; Agenda</span>
           <nav class="mt-2 space-y-1">
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <i data-lucide="layout-grid" class="w-4 h-4"></i>
@@ -216,7 +267,6 @@
                 <i data-lucide="calendar" class="w-4 h-4 text-blue-400"></i>
                 <span>Calendário de Clientes</span>
               </div>
-              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 font-bold">Hoje</span>
             </button>
             <button onclick="switchTab('churn-risk')" id="nav-churn-risk" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
@@ -241,7 +291,6 @@
                 <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>
                 <span>Pipeline de Renovação</span>
               </div>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300">90/60/30d</span>
             </button>
           </nav>
         </div>
@@ -255,35 +304,31 @@
                 <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
                 <span>Kits RH & Campanhas IA</span>
               </div>
-              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold">Kits</span>
             </button>
             <button onclick="switchTab('communications')" id="nav-communications" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="send" class="w-4 h-4 text-emerald-400"></i>
                 <span>Central Omnichannel & Régua</span>
               </div>
-              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">Auto</span>
             </button>
             <button onclick="switchTab('team')" id="nav-team" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
                 <span>Equipe & Carteira CSM ("RH")</span>
               </div>
-              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">3 CSMs</span>
             </button>
           </nav>
         </div>
 
         <!-- SEÇÃO 3: ORGANIZAÇÃO & ROTINA -->
         <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Organização & Rotina</span>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Organização</span>
           <nav class="mt-2 space-y-1">
             <button onclick="switchTab('partners')" id="nav-partners" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="store" class="w-4 h-4 text-emerald-400"></i>
                 <span>Rede de Parceiros & LGPD</span>
               </div>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300">5 Categorias</span>
             </button>
             <button onclick="switchTab('reminders')" id="nav-reminders" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all bg-indigo-50 dark:bg-brand-600/15 text-brand-600 dark:text-brand-300 border border-indigo-200 dark:border-brand-500/30">
               <div class="flex items-center gap-3">
@@ -300,7 +345,7 @@
         </div>
 
         <!-- Ferramenta Rápida: Copiar Resumo para Planilha de IS -->
-        <div class="bg-gradient-to-br from-indigo-950/40 via-darkbg-850 to-slate-900/60 p-3.5 rounded-2xl border border-indigo-500/20 text-xs space-y-2.5 shadow-sm">
+        <div class="bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 p-3.5 rounded-2xl text-xs space-y-2.5 shadow-sm">
           <div class="flex items-center gap-2 text-indigo-300 font-semibold">
             <i data-lucide="zap" class="w-4 h-4 text-indigo-400"></i>
             <span>Exportação para Google Sheets</span>
@@ -453,7 +498,7 @@
               </div>
 
               <!-- Claude AI Callout Banner Exato da Imagem com Visual Elevado -->
-              <div class="mt-5 p-4 rounded-xl bg-gradient-to-r from-indigo-950/70 via-indigo-900/40 to-darkbg-900 border border-indigo-500/30 text-xs flex items-start gap-3 shadow-inner">
+              <div class="mt-5 p-4 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 text-xs flex items-start gap-3 shadow-inner">
                 <div class="p-2 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex-shrink-0 mt-0.5">
                   <i data-lucide="bot" class="w-4 h-4"></i>
                 </div>
@@ -660,8 +705,8 @@
       <section id="tab-dashboard" class="tab-content space-y-6 animate-tab">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard Analítico & Carteira de Contas</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Telemetria em tempo real, projeção de receita e acompanhamento de saúde da carteira.</p>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Carteira de contas</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Receita, saúde e retenção dos clientes sob gestão.</p>
           </div>
           <div class="flex items-center gap-2.5">
             <button onclick="exportToCSV()" class="px-3 py-2 rounded-xl bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 active:scale-95 transition-all">
@@ -677,28 +722,28 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">MRR Sob Gestão</div>
-            <div id="kpi-total-mrr" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">R$ 94.200</div>
+            <div id="kpi-total-mrr" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">R$ 94.200</div>
             <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
               <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> +4.2% este mês
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Health Score Médio</div>
-            <div id="kpi-avg-hs" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">72 / 100</div>
+            <div id="kpi-avg-hs" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">72 / 100</div>
             <div id="kpi-hs-status-note" class="text-[11px] text-amber-500 flex items-center gap-1 mt-1 font-medium">
               <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 2 contas em alerta vermelho
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Net Retention Rate (NRR)</div>
-            <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">112%</div>
+            <div class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">112%</div>
             <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
               <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Meta anual batida
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Em Onboarding / Setup</div>
-            <div id="kpi-onboarding-count" class="text-2xl font-extrabold text-indigo-400 mt-1">3 Contas</div>
+            <div id="kpi-onboarding-count" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">3 Contas</div>
             <div class="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i> SLA: max 30 dias
             </div>
@@ -1149,7 +1194,7 @@
             </div>
 
             <!-- Card de Automação & Boas Práticas -->
-            <div class="bg-gradient-to-br from-indigo-950/40 via-darkbg-850 to-slate-900/60 p-4 rounded-2xl border border-indigo-500/20 text-xs space-y-2">
+            <div class="bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 p-4 rounded-2xl text-xs space-y-2">
               <div class="flex items-center gap-2 text-indigo-300 font-bold">
                 <i data-lucide="shield-check" class="w-4 h-4"></i>
                 <span>Diretriz de Contato de CS</span>
@@ -1887,7 +1932,7 @@
 
       <!-- SUB-ABA 2: GOOGLE WORKSPACE & CLOUD -->
       <div id="cfg-subtab-google" class="space-y-4 text-xs hidden">
-        <div class="p-4 rounded-xl bg-gradient-to-r from-blue-950/30 to-indigo-950/20 border border-blue-500/20 text-slate-300 leading-relaxed">
+        <div class="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 text-slate-700 dark:text-slate-300 leading-relaxed">
           Conecte o PulseCS ao ecossistema <strong>Google Workspace</strong> para sincronizar dados diretamente com Google Sheets, Google Meet e Google Calendar.
         </div>
 
@@ -1935,7 +1980,7 @@
 
       <!-- SUB-ABA: INTEGRAÇÃO SALEZ CRM (WHATSAPP IA & FUNCIONÁRIOS DIGITAIS) -->
       <div id="cfg-subtab-salez" class="space-y-4 text-xs hidden">
-        <div class="p-4 rounded-xl bg-gradient-to-r from-emerald-950/30 via-darkbg-900 to-indigo-950/20 border border-emerald-500/20 text-slate-300 leading-relaxed">
+        <div class="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 text-slate-700 dark:text-slate-300 leading-relaxed">
           Conecte o PulseCS à plataforma <strong>Salez (salez.com.br)</strong>. Utilize os <em>Funcionários Digitais</em> da Salez no WhatsApp oficial para receber vendas fechadas direto no Onboarding e automatizar o resgate de contas inativas.
         </div>
 
@@ -2649,7 +2694,39 @@
       }
     }
 
+    function chartColors() {
+      const d = document.documentElement.classList.contains('dark');
+      return {
+        ink: d ? '#a9a79c' : '#5f5d55',
+        grid: d ? 'rgba(255, 255, 255, 0.06)' : 'rgba(27, 26, 24, 0.07)',
+        line: d ? '#43a5a0' : '#0f6f70',
+        fill: d ? 'rgba(67, 165, 160, 0.14)' : 'rgba(15, 111, 112, 0.09)',
+        goal: d ? 'rgba(110, 200, 160, 0.65)' : 'rgba(4, 120, 87, 0.6)',
+        tiers: d ? ['#43a5a0', '#78c2bd', '#8a8678'] : ['#0f6f70', '#5fb3ae', '#cbc3a8']
+      };
+    }
+
+    function applyChartTheme() {
+      const C = chartColors();
+      if (chartHsInstance) {
+        const ds = chartHsInstance.data.datasets;
+        ds[0].borderColor = C.line; ds[0].backgroundColor = C.fill; ds[0].pointBackgroundColor = C.line;
+        ds[1].borderColor = C.goal;
+        const o = chartHsInstance.options;
+        o.plugins.legend.labels.color = C.ink;
+        o.scales.x.ticks.color = C.ink; o.scales.y.ticks.color = C.ink;
+        o.scales.x.grid.color = C.grid; o.scales.y.grid.color = C.grid;
+        chartHsInstance.update();
+      }
+      if (chartMrrInstance) {
+        chartMrrInstance.data.datasets[0].backgroundColor = C.tiers;
+        chartMrrInstance.options.plugins.legend.labels.color = C.ink;
+        chartMrrInstance.update();
+      }
+    }
+
     function initCharts() {
+      const C = chartColors();
       const ctxHs = document.getElementById('chart-hs-evolution')?.getContext('2d');
       if (ctxHs) {
         chartHsInstance = new Chart(ctxHs, {
@@ -2660,18 +2737,18 @@
               {
                 label: 'Health Score Médio da Carteira',
                 data: [64, 67, 65, 70, 71, 74],
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                borderColor: C.line,
+                backgroundColor: C.fill,
                 fill: true,
                 tension: 0.35,
                 borderWidth: 3,
                 pointRadius: 4,
-                pointBackgroundColor: '#6366f1'
+                pointBackgroundColor: C.line
               },
               {
                 label: 'Meta Contratual (80+)',
                 data: [80, 80, 80, 80, 80, 80],
-                borderColor: 'rgba(16, 185, 129, 0.55)',
+                borderColor: C.goal,
                 borderDash: [5, 5],
                 borderWidth: 1.5,
                 pointRadius: 0,
@@ -2684,19 +2761,19 @@
             maintainAspectRatio: false,
             plugins: {
               legend: {
-                labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
+                labels: { color: C.ink, font: { size: 12, family: 'Inter' } }
               }
             },
             scales: {
               y: {
                 min: 40,
                 max: 100,
-                grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: '#94a3b8' }
+                grid: { color: C.grid },
+                ticks: { color: C.ink }
               },
               x: {
-                grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                ticks: { color: '#94a3b8' }
+                grid: { color: C.grid },
+                ticks: { color: C.ink }
               }
             }
           }
@@ -2715,7 +2792,7 @@
             labels: ['Enterprise', 'Mid-Market', 'SMB / Pro'],
             datasets: [{
               data: [enterpriseMRR, midMRR, smbMRR],
-              backgroundColor: ['#6366f1', '#a855f7', '#06b6d4'],
+              backgroundColor: C.tiers,
               borderWidth: 0,
               hoverOffset: 6
             }]
@@ -2726,7 +2803,7 @@
             plugins: {
               legend: {
                 position: 'bottom',
-                labels: { color: '#94a3b8', font: { size: 10, family: 'Inter' } }
+                labels: { color: C.ink, font: { size: 12, family: 'Inter' } }
               }
             },
             cutout: '72%'
@@ -3675,10 +3752,14 @@
         localStorage.setItem('pulsecs_theme', 'dark');
       }
       lucide.createIcons();
+      if (typeof applyChartTheme === 'function') applyChartTheme();
     }
 
-    if (localStorage.getItem('pulsecs_theme') === 'light') {
-      document.documentElement.classList.remove('dark');
+    // Claro é o padrão; o escuro só entra se a pessoa escolheu antes
+    if (localStorage.getItem('pulsecs_theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+      const ti = document.getElementById('theme-icon');
+      if (ti) ti.setAttribute('data-lucide', 'moon');
     }
 
     function toggleNotificationMenu() {
