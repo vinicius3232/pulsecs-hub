@@ -161,7 +161,7 @@ O front só controla a experiência; **quem protege os dados é a RLS do banco**
 - **Teste:** `npm install && npm run test:rls` roda 13 cenários por perfil num Postgres embutido (PGlite). Sem a migration 0004, 11 deles falham.
 
 ### Ativar o login (uma vez)
-1. No Supabase aplique, nesta ordem: `schema.sql`, `0002`, `0003`, `0004`.
+1. No Supabase aplique, nesta ordem: `schema.sql`, `0002`, `0003`, `0004`, `0005` (e `seed.sql`, se quiser dados de exemplo).
 2. **Authentication › Sign In / Providers › Email › desligue "Allow new users to sign up"** (a RLS já nega tudo a quem não está na equipe, mas não deixe a porta aberta).
 3. Crie os usuários em Authentication › Users (convite) e vincule ao perfil:
    ```sql
@@ -174,4 +174,51 @@ O front só controla a experiência; **quem protege os dados é a RLS do banco**
 
 Com o login ativo: o Painel Master abre por papel (`head`), sem senha local; o Copilot chama `/api/ai` com o JWT; **nenhuma chave de IA é digitada nem guardada no navegador** (chaves antigas salvas no `localStorage` são apagadas ao carregar).
 
-> ⚠️ Enquanto a carteira não for lida do banco (próxima etapa, P1), a tela mostra dados de demonstração do navegador mesmo com login. Uma faixa no topo avisa isso.
+> Com o login ativo, a carteira vem do banco (ver P1 abaixo). Sem `config.js` preenchido, o app roda em modo demonstração.
+
+---
+
+## 🗄️ Carteira no banco, Health Score do servidor e painel "Hoje" (P1–P3)
+
+### P1 — A carteira vem do Supabase
+Com login ativo (`public/config.js` preenchido), `public/data-layer.js` carrega **empresas, contatos, equipe, reuniões e tarefas** do banco e grava as edições (criar, editar, mover de fase, reatribuir, excluir) por diferença. Sem login, tudo segue como antes: modo demonstração com `localStorage`.
+
+- **A RLS decide o que cada perfil grava.** O banco não devolve erro quando bloqueia um `UPDATE`, só afeta 0 linhas; a camada de dados confirma as linhas afetadas, avisa com um toast e **recarrega o estado real do banco** (a tela nunca fica mostrando algo que não foi salvo).
+- Estados explícitos: carregando, erro com "Tentar de novo", e uma faixa no topo (`Conectado ao banco · N empresas · salvo às HH:MM`).
+- Abas com conteúdo fixo (Relatórios, Campanhas, Parceiros, Lembretes) ganham o aviso "Conteúdo de demonstração".
+- Números que **não existem no banco** (NRR, variação de MRR, taxa de resposta) aparecem como "—" no modo banco; adoção média, economia gerada e MRR a renovar são **calculados** das empresas.
+- O e-mail do contato é obrigatório no banco; contatos criados pela tela sem e-mail usam o placeholder `sem-email@pulsecs.invalid`.
+
+### P2 — Health Score calculado no servidor (`0005_health_score_server.sql`)
+O score deixa de ser digitado. O banco calcula com a fórmula de `src/lib/health-score.ts` (ativação 35%, MAU 25%, RH 15%, renovação 15%, NPS 10%, −25 por inadimplência).
+
+- **Paridade testada:** `npm run test:health` compara SQL × TypeScript em 600 combinações (score, status, taxas e fatores).
+- **Recalcula sozinho** (gatilho) quando mudam vidas, login do RH, renovação, NPS ou inadimplência, e **todo dia no cron** (dias para renovar e sem login mudam com o tempo). Grava **um snapshot por dia** em `health_snapshots` (alimenta o gráfico de tendência).
+- **Sem métricas, sem nota:** empresa com `eligible_lives = 0` não é pontuada (nenhum falso alarme); o Raio-X diz o motivo.
+- **Ninguém semeia números:** `csm` e `is` não alteram métricas, renovação nem score; empresas criadas por CSM nascem com padrões. O `head` pode corrigir métricas (o score é recalculado).
+- Dados coerentes: `ativadas ≤ elegíveis`, `MAU ≤ ativadas`, sem negativos (CHECK no banco).
+- Mudança de status (ex.: verde → vermelho) gera `company.health_changed`, que dispara as automações.
+
+**Ingestão de métricas** (a "telemetria diária" da plataforma de benefícios):
+
+```bash
+curl -X POST https://SEU-DOMINIO/api/ingest/metrics \
+  -H "x-ingest-secret: $INGEST_SECRET" -H "Content-Type: application/json" \
+  -d '{"items":[{"cnpj":"12.345.678/0001-90","eligible_lives":1000,"active_lives":800,"mau_lives":600,"total_savings":48200.5,"nps_score":8.5,"has_overdue_invoice":false,"last_login_at":"2026-11-05T10:00:00Z"}]}'
+```
+- Identifica a empresa por `company_id` (uuid) ou `cnpj` (14 dígitos, **guarde o CNPJ só com dígitos** em `companies.cnpj`). Até 500 itens por chamada; parcial (só os campos enviados); idempotente.
+- Resposta: `{ received, updated, failed: [{ index, reason }] }`. Quem envia reenvia só o que falhou.
+- Segredo em `INGEST_SECRET` (falha fechada sem ele), limite por IP, validação estrita (só chaves conhecidas entram no UPDATE).
+
+### P3 — Painel "Hoje" (aba inicial)
+Quanto da receita está em risco, quais contas exigem ação e por quê, e a próxima ação. As tarefas criadas pelas automações aparecem aqui e podem ser **concluídas** na própria tela (só o dono da tarefa ou o Head; senão o banco recusa e a tela avisa). Prioridade: críticas primeiro, depois maior MRR, depois a mais antiga. Conta crítica **sem tarefa aberta** aparece como "sem ação registrada". Tarefas paradas há 7+ dias são contadas à parte.
+
+### Testes
+| Comando | O que cobre |
+|---|---|
+| `npm test` | motor de automação, validação da ingestão, camada de dados e painel "Hoje" |
+| `npm run test:rls` | 13 cenários de permissão por perfil (Postgres embutido) |
+| `npm run test:health` | paridade SQL × TS, recálculo, snapshots, guardas de coluna, `seed.sql` |
+
+### Ordem das migrations
+`schema.sql` → `0002` → `0003` → `0004` → `0005`, depois `seed.sql` (opcional). Todas idempotentes.

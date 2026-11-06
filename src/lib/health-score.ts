@@ -7,7 +7,7 @@ export interface HealthScoreInput {
   eligible_lives: number;       // Vidas totais
   active_lives: number;         // Vidas ativadas
   mau_lives: number;            // Vidas com uso no mês
-  rh_last_login_days: number;   // Dias desde o último login do RH
+  rh_last_login_days: number | null;   // Dias desde o último login do RH (null = nunca logou)
   days_to_renewal: number;      // Dias até a renovação
   nps_score?: number;           // NPS (0 a 10)
   has_overdue_invoice?: boolean;// Inadimplência
@@ -28,9 +28,9 @@ export function calculateAdoptionHealthScore(input: HealthScoreInput): HealthSco
     mau_lives,
     rh_last_login_days,
     days_to_renewal,
-    nps_score = 8,
     has_overdue_invoice = false
   } = input;
+  const nps_score = input.nps_score ?? 8; // null/undefined = padrão 8 (igual ao banco)
 
   const risk_factors: string[] = [];
 
@@ -56,7 +56,10 @@ export function calculateAdoptionHealthScore(input: HealthScoreInput): HealthSco
 
   // 3. Engajamento do Gestor de RH (Peso: 0.15)
   let s_rh = 0;
-  if (rh_last_login_days <= 7) s_rh = 100;
+  if (rh_last_login_days === null || rh_last_login_days === undefined) {
+    s_rh = 40;
+    risk_factors.push('Gestor de RH ainda sem login registrado');
+  } else if (rh_last_login_days <= 7) s_rh = 100;
   else if (rh_last_login_days <= 14) s_rh = 70;
   else if (rh_last_login_days <= 30) {
     s_rh = 40;

@@ -28,6 +28,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   try {
+    // 1) Recalcula o Health Score de todas as empresas com métricas (dias de renovação e de RH mudam todo dia)
+    //    e grava o snapshot do dia. Mudança de status gera evento para as regras.
+    const { data: recomputed, error: healthErr } = await admin.rpc('fn_recompute_health');
+    if (healthErr) throw new Error(`health: ${healthErr.message}`);
+
+    // 2) Eventos guiados pelo relógio (renovação próxima, RH sem login)
     const { data: emitted, error: emitErr } = await admin.rpc('fn_emit_time_events');
     if (emitErr) throw new Error(`emit: ${emitErr.message}`);
 
@@ -55,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       scheduled.failed += s.failed;
       if (s.scanned < 20) break;
     }
-    return res.status(200).json({ emitted: emitted ?? 0, events, scheduled });
+    return res.status(200).json({ recomputed: recomputed ?? 0, emitted: emitted ?? 0, events, scheduled });
   } catch (err) {
     console.error('drain-events error', (err as Error)?.message);
     return res.status(500).json({ error: 'Drain failed' });

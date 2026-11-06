@@ -44,6 +44,7 @@ before(async () => {
                  grant all on all tables in schema public to anon, authenticated, service_role;`);
   await db.exec(sql('migrations/0004_rls_by_role.sql'));
   await db.exec(sql('migrations/0004_rls_by_role.sql')); // idempotente
+  await db.exec(sql('migrations/0005_health_score_server.sql')); // guard de colunas e recálculo convivem com a RLS
 
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`

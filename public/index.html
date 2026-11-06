@@ -178,6 +178,13 @@
     .dark #auth-gate { background: #0d0f0e; }
     body.auth-locked #auth-gate { display: flex; }
     body.auth-locked > header, body.auth-locked > div.flex-1, body.auth-locked #data-source-banner { visibility: hidden; }
+    #data-source-banner.tone-info { border-color: #d4ecea; background: #eef7f6; color: #0c5859; }
+    .dark #data-source-banner.tone-info { border-color: rgba(67,165,160,.3); background: rgba(67,165,160,.1); color: #aadbd7; }
+    #data-source-banner.tone-error { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
+    .dark #data-source-banner.tone-error { border-color: rgba(244,63,94,.35); background: rgba(244,63,94,.1); color: #fda4af; }
+    /* UX apenas: quem barra de verdade é a RLS */
+    body[data-role]:not([data-role="head"]) [onclick*="deleteCurrentClientFromModal"],
+    body[data-role]:not([data-role="head"]) [onclick*="simulateEquitableBalance"] { display: none !important; }
     body[data-role="viewer"] [onclick*="openNewClientModal"], body[data-role="viewer"] [onclick*="openEditClientModal"] { display: none !important; }
   </style>
 </head>
@@ -303,6 +310,10 @@
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Contas &amp; Agenda</span>
           <nav class="mt-2 space-y-1">
+            <button onclick="switchTab('today')" id="nav-today" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
+              <i data-lucide="target" class="w-4 h-4"></i>
+              <span>Hoje</span>
+            </button>
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <i data-lucide="layout-grid" class="w-4 h-4"></i>
               <span>Dashboard & Gráficos</span>
@@ -747,7 +758,15 @@
       <!-- ============================================================== -->
       <!-- ABA 2: DASHBOARD & GRÁFICOS ANALÍTICOS (ESTILO DESKCOMM)      -->
       <!-- ============================================================== -->
-      <section id="tab-dashboard" class="tab-content space-y-6 animate-tab">
+      <section id="tab-today" class="tab-content space-y-6 animate-tab">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Hoje</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O que precisa da sua atenção agora, por quê e qual a próxima ação.</p>
+        </div>
+        <div id="today-content"></div>
+      </section>
+
+      <section id="tab-dashboard" class="tab-content hidden space-y-6 animate-tab">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Carteira de contas</h2>
@@ -769,7 +788,7 @@
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">MRR Sob Gestão</div>
             <div id="kpi-total-mrr" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">R$ 94.200</div>
             <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
-              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> +4.2% este mês
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> <span data-demo="mrr-delta">+4.2% este mês</span>
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
@@ -781,9 +800,9 @@
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Net Retention Rate (NRR)</div>
-            <div class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">112%</div>
+            <div class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1" data-demo="nrr">112%</div>
             <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Meta anual batida
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> <span data-demo="nrr-note">Meta anual batida</span>
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
@@ -808,7 +827,7 @@
                 <p class="text-xs text-slate-400">Média ponderada do engajamento e telemetria de uso dos clientes</p>
               </div>
               <span class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                Tendência de Alta (+8.5%)
+                <span data-demo="trend">Tendência de Alta (+8.5%)</span>
               </span>
             </div>
             <div class="h-64 relative">
@@ -1151,7 +1170,7 @@
               <span>Taxa de Resposta</span>
               <i data-lucide="message-square-text" class="w-4 h-4 text-indigo-400"></i>
             </div>
-            <div class="text-2xl font-bold text-indigo-400 mt-1">88.5%</div>
+            <div class="text-2xl font-bold text-indigo-400 mt-1" data-demo="resp-rate">88.5%</div>
             <p class="text-[11px] text-slate-500 mt-0.5">WhatsApp: 92% • E-mail: 64%</p>
           </div>
         </div>
@@ -1338,7 +1357,7 @@
               <span>Net Retention Rate (NRR)</span>
               <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
             </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1">108.4%</div>
+            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="nrr">108.4%</div>
             <p class="text-[11px] text-slate-500 mt-0.5">Expansão líquida positiva</p>
           </div>
         </div>
@@ -1411,7 +1430,7 @@
               <span>MRR em Janela de Renovação</span>
               <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-400"></i>
             </div>
-            <div class="text-2xl font-bold text-amber-400 mt-1" id="renewal-stat-mrr">R$ 34.7k</div>
+            <div class="text-2xl font-bold text-amber-400 mt-1" id="renewal-stat-mrr" data-demo="renewal-mrr">R$ 34.7k</div>
             <p class="text-[11px] text-slate-500 mt-0.5">3 contratos nos próximos 90 dias</p>
           </div>
 
@@ -1420,7 +1439,7 @@
               <span>Net Retention Rate (NRR)</span>
               <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
             </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1">108.4%</div>
+            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="nrr">108.4%</div>
             <p class="text-[11px] text-slate-500 mt-0.5">Expansão supera cancelamentos</p>
           </div>
 
@@ -1429,7 +1448,7 @@
               <span>Taxa Média de Adoção</span>
               <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
             </div>
-            <div class="text-2xl font-bold text-indigo-400 mt-1">81.2%</div>
+            <div class="text-2xl font-bold text-indigo-400 mt-1" data-demo="adoption">81.2%</div>
             <p class="text-[11px] text-slate-500 mt-0.5">Colaboradores ativos na carteira</p>
           </div>
 
@@ -1438,7 +1457,7 @@
               <span>Economia Gerada Total</span>
               <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
             </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1">R$ 384.2k</div>
+            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="savings">R$ 384.2k</div>
             <p class="text-[11px] text-slate-500 mt-0.5">Alavanca de ROI na renovação</p>
           </div>
         </div>
@@ -2308,6 +2327,11 @@
             Conta em ritmo constante. Recomendado apresentar case de sucesso de outro cliente similar no próximo check-in.
           </div>
         </div>
+        <div id="modal-client-adoption" class="hidden">
+          <label class="block font-semibold text-slate-300 mb-1">Adoção dos colaboradores (calculado no servidor):</label>
+          <div id="modal-client-adoption-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+          <ul id="modal-client-factors" class="mt-2 list-disc pl-5 space-y-0.5 text-slate-700 dark:text-slate-300"></ul>
+        </div>
       </div>
 
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -2500,7 +2524,7 @@
         }
       }
       // Sem hash válido, abre no Dashboard (visão da carteira)
-      if (!document.getElementById('tab-' + window.location.hash.replace('#', ''))) switchTab('dashboard');
+      if (!document.getElementById('tab-' + window.location.hash.replace('#', ''))) switchTab('today');
     });
 
     // --- 3. TROCA DE ABAS ---
@@ -2520,7 +2544,9 @@
         activeNav.classList.add('bg-indigo-50', 'dark:bg-brand-600/15', 'text-brand-600', 'dark:text-brand-300', 'border', 'border-indigo-200', 'dark:border-brand-500/30', 'font-semibold');
       }
 
-      if (tabId === 'dashboard') {
+      if (tabId === 'today') {
+        renderTodayTab();
+      } else if (tabId === 'dashboard') {
         setTimeout(updateCharts, 50);
       } else if (tabId === 'calendar') {
         renderCalendar();
@@ -2696,6 +2722,18 @@
       if (countEl) countEl.textContent = filtered.length === clients.length ? clients.length + ' clientes' : filtered.length + ' de ' + clients.length + ' clientes';
       if (typeof renderWalletViews === 'function') renderWalletViews();
 
+      if (!filtered.length && window.PulseData && PulseData.status === 'loading') {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400" role="status">Carregando a carteira do banco…</td></tr>';
+        return;
+      }
+      if (!clients.length && window.PulseData && PulseData.status === 'error') {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-sm text-rose-700 dark:text-rose-400" role="alert">Não foi possível carregar a carteira. <button type="button" onclick="PulseData.load()" class="underline">Tentar de novo</button></td></tr>';
+        return;
+      }
+      if (!filtered.length && window.PulseData && PulseData.mode === 'db' && !clients.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Nenhuma empresa cadastrada ainda. Use "Adicionar Cliente".</td></tr>';
+        return;
+      }
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Nenhum cliente com esses filtros. <button type="button" onclick="applyWalletView(\'all\')" class="underline text-brand-600 dark:text-brand-400">Limpar filtros</button></td></tr>';
         return;
@@ -3098,7 +3136,14 @@
     }
 
     function saveClientsData() {
+      // Com banco: grava por diferença no Supabase; sem banco (demo): localStorage
+      if (window.PulseData && PulseData.mode === 'db') { PulseData.scheduleSync(); return; }
       localStorage.setItem('pulsecs_clients', JSON.stringify(clients));
+    }
+
+    function saveCalendarData() {
+      if (window.PulseData && PulseData.mode === 'db') { PulseData.scheduleSync(); return; }
+      saveCalendarData();
     }
 
     function refreshAllViews() {
@@ -3144,6 +3189,7 @@
       document.getElementById('modal-client-copilot-insight').textContent = c.riskReason !== 'Nenhum' 
         ? `⚠️ Alerta Crítico: ${c.riskReason}. Ação recomendada: Intervenção técnica imediata antes da reunião de renovação.`
         : `✅ Operação saudável: Adoção consistente dos módulos e NPS favorável. Candidato ideal para case e upsell de licenças.`;
+      if (window.PulseData) PulseData.fillClientModal(c);
 
       document.getElementById('client-modal').classList.remove('hidden');
     }
@@ -3469,9 +3515,10 @@
       }
 
       // Atribui automaticamente ao CSM com menor volume de contas
-      const csmCounts = { 1: 0, 2: 0, 3: 0 };
+      const csmCounts = {};
+      teamCSMs.forEach(t => { csmCounts[t.id] = 0; });
       clients.forEach(c => { if (csmCounts[c.csmId] !== undefined) csmCounts[c.csmId]++; });
-      const bestCsmId = parseInt(Object.keys(csmCounts).reduce((minId, id) => csmCounts[id] < csmCounts[minId] ? id : minId, 1));
+      const bestCsmId = parseInt(Object.keys(csmCounts).reduce((minId, id) => csmCounts[id] < csmCounts[minId] ? id : minId, Object.keys(csmCounts)[0]), 10);
       const csm = teamCSMs.find(t => t.id === bestCsmId) || teamCSMs[0];
 
       const newId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
@@ -3492,7 +3539,7 @@
       };
 
       clients.unshift(newClient);
-      localStorage.setItem('pulsecs_clients', JSON.stringify(clients));
+      saveClientsData();
 
       // Agenda automaticamente o Kickoff no Calendário
       const newEvent = {
@@ -3509,7 +3556,7 @@
         meetUrl: 'https://meet.google.com/new'
       };
       calendarEvents.push(newEvent);
-      localStorage.setItem('pulsecs_calendar', JSON.stringify(calendarEvents));
+      saveCalendarData();
 
       // Atualiza todas as views
       renderClientTable();
@@ -3861,7 +3908,7 @@
       // Dias reais do mês
       for (let day = 1; day <= totalDays; day++) {
         const cell = document.createElement('div');
-        const isToday = (day === 6 && currentCalendarMonth === 10 && currentCalendarYear === 2026);
+        const isToday = PulseData.isToday(day, currentCalendarMonth, currentCalendarYear);
         
         cell.className = `p-2 rounded-xl border transition-all min-h-[95px] flex flex-col justify-between ${
           isToday
@@ -3881,7 +3928,7 @@
         const eventsContainer = document.createElement('div');
         eventsContainer.className = 'space-y-1.5 my-1';
 
-        const daysEvents = calendarEvents.filter(e => e.day === day && currentCalendarMonth === 10);
+        const daysEvents = calendarEvents.filter(e => PulseData.eventOnDay(e, day, currentCalendarMonth, currentCalendarYear));
         daysEvents.forEach(evt => {
           const badge = document.createElement('button');
           badge.onclick = (e) => {
@@ -4173,7 +4220,8 @@
       const client = clients.find(c => c.id === parseInt(select.value));
       if (client) {
         client.lastLogin = 'Hoje (Contatado via CS)';
-        localStorage.setItem('pulsecs_clients', JSON.stringify(clients));
+        saveClientsData();
+        if (window.PulseData) PulseData.logInteraction(client, 'note', 'manual_contact', 'Contato registrado pelo CSM na Central Omnichannel');
         renderClientTable();
         renderOmnichannelTab();
         showToast(`Contato com ${client.name} registrado no histórico da carteira.`, 'success');
@@ -4321,7 +4369,7 @@
       if (!client || !newCsm) return;
 
       client.csmId = newCsm.id;
-      localStorage.setItem('pulsecs_clients', JSON.stringify(clients));
+      saveClientsData();
       renderTeamTab();
       showToast(`Conta "${client.name}" transferida para ${newCsm.name}!`, 'success');
     }
@@ -4329,19 +4377,21 @@
     function simulateEquitableBalance() {
       // Ordena clientes por MRR decrescente para balanceamento guloso ótimo
       const sortedClients = [...clients].sort((a, b) => b.mrr - a.mrr);
-      const csmTotals = { 1: 0, 2: 0, 3: 0 };
+      const csmTotals = {};
+      teamCSMs.forEach(t => { csmTotals[t.id] = 0; });
+      if (!teamCSMs.length) return;
 
       sortedClients.forEach(c => {
         // Encontra o CSM com menor MRR acumulado no momento
-        const minCsmId = Object.keys(csmTotals).reduce((minId, id) => csmTotals[id] < csmTotals[minId] ? id : minId, 1);
+        const minCsmId = Object.keys(csmTotals).reduce((minId, id) => csmTotals[id] < csmTotals[minId] ? id : minId, Object.keys(csmTotals)[0]);
         c.csmId = parseInt(minCsmId);
         csmTotals[minCsmId] += c.mrr;
       });
 
-      localStorage.setItem('pulsecs_clients', JSON.stringify(clients));
+      saveClientsData();
       renderTeamTab();
       renderClientTable();
-      showToast('Carteira rebalanceada com IA! MRR distribuído equilibradamente entre os 3 CSMs.', 'success');
+      showToast('Carteira rebalanceada! MRR distribuído equilibradamente entre os CSMs.', 'success');
     }
 
     // =========================================================================
@@ -4594,6 +4644,9 @@
       showToast('Relatório oficial de Auditoria LGPD gerado e baixado com sucesso!', 'success');
     }
   </script>
+  <script src="data-layer.js"></script>
+  <script src="today.js"></script>
+
   <script>
     // ===== Login (Supabase Auth) =====
     // O front só controla a experiência. A proteção real é a RLS do banco (migration 0004)
@@ -4604,7 +4657,7 @@
       const ROLE_LABEL = { head: 'Head de CS', csm: 'CSM', is: 'Implementação', viewer: 'Leitura' };
       const $ = id => document.getElementById(id);
       const state = { session: null, profile: null };
-      let sb = null, failures = 0, lockedUntil = 0;
+      let sb = null, failures = 0, lockedUntil = 0, wasSignedIn = false;
 
       window.PulseAuth = {
         enabled,
@@ -4614,13 +4667,15 @@
         signOut: async () => { if (sb) await sb.auth.signOut(); }
       };
 
-      function banner(text) {
+      function banner(text, tone) {
         const b = $('data-source-banner');
         if (!b) return;
         if (!text) { b.classList.add('hidden'); return; }
         b.textContent = text;
-        b.classList.remove('hidden');
+        b.classList.remove('hidden', 'tone-info', 'tone-error');
+        if (tone) b.classList.add('tone-' + tone);
       }
+      window.PulseAuth.banner = banner;
 
       if (!enabled) {
         banner('Modo demonstração: sem login e com dados locais deste navegador. Configure public/config.js para ativar o login.');
@@ -4658,6 +4713,7 @@
           return;
         }
         state.profile = data;
+        wasSignedIn = true;
         document.body.classList.remove('auth-locked');
         document.body.setAttribute('data-role', data.role);
         $('auth-user-name').textContent = data.name;
@@ -4666,13 +4722,16 @@
         $('auth-user-chip').classList.add('flex');
         message('');
         $('auth-password').value = '';
-        banner('Sessão ativa. A carteira exibida ainda vem dos dados locais de demonstração deste navegador; a sincronização com o banco é a próxima etapa.');
+        if (window.PulseData) await PulseData.start(sb, data);
       }
 
       // Não chamar o Supabase direto dentro do callback (risco de deadlock): adia para o próximo ciclo
-      sb.auth.onAuthStateChange((_evt, session) => {
+      sb.auth.onAuthStateChange((evt, session) => {
         state.session = session || null;
-        setTimeout(() => { session ? enter(session) : showGate(); }, 0);
+        if (session) { if (!state.profile) setTimeout(() => enter(session), 0); return; } // refresh de token / foco da aba não recarrega dados
+        // Saiu: recarrega a página para não deixar dados da carteira na memória
+        if (wasSignedIn) { location.reload(); return; }
+        setTimeout(() => showGate(), 0);
       });
 
       $('auth-form').addEventListener('submit', async e => {
@@ -4893,17 +4952,24 @@
       }
     }
 
-    // Popular o filtro de responsável uma única vez e desenhar as visões
-    document.addEventListener('DOMContentLoaded', () => {
+    // O filtro de responsável acompanha a equipe atual (demo ou banco)
+    function populateOwnerFilter() {
       const sel = document.getElementById('wallet-filter-owner');
-      if (sel && sel.options.length === 1) {
-        for (const t of teamCSMs) {
-          const o = document.createElement('option');
-          o.value = String(t.id);
-          o.textContent = t.name;
-          sel.appendChild(o);
-        }
+      if (!sel) return;
+      const keep = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      for (const t of teamCSMs) {
+        const o = document.createElement('option');
+        o.value = String(t.id);
+        o.textContent = t.name;
+        sel.appendChild(o);
       }
+      sel.value = [...sel.options].some(o => o.value === keep) ? keep : 'all';
+    }
+    window.populateOwnerFilter = populateOwnerFilter;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateOwnerFilter();
       renderWalletViews();
     });
   </script>
