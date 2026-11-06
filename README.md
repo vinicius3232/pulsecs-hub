@@ -143,3 +143,35 @@ Padrão adaptado do DeskcommCRM (MIT): triggers do Postgres só gravam em `event
 
 ### Views salvas da carteira
 Dashboard › Carteira: visões prontas (Em risco, Atenção, Em onboarding, Maiores contas, Enterprise saudáveis) e visões pessoais ("+ Salvar visão atual"). Uma visão guarda busca, plano, saúde, fase, responsável e ordenação. No protótipo ficam em `localStorage` (`pulsecs_views`); a tabela `public.saved_views` (migration 0003, com RLS) está pronta para quando o front usar o Supabase.
+
+---
+
+## 🔐 Acesso, perfis e RLS (P0)
+O front só controla a experiência; **quem protege os dados é a RLS do banco** (`supabase/migrations/0004_rls_by_role.sql`) e a validação do JWT nas funções `/api`.
+
+| Perfil (`csm_users.role`) | Lê | Escreve |
+|---|---|---|
+| `head` | tudo | tudo (empresas, equipe, regras, tarefas) |
+| `csm` | tudo | só as empresas **suas** (e assume as sem gestor), com contatos, reuniões e interações delas; suas tarefas e visões |
+| `is` | tudo | empresas **fora de Go-Live** (avança onboarding); não reatribui nem altera valores/contrato |
+| `viewer` | tudo | nada de negócio (só as próprias visões) |
+| fora da equipe ou inativo | **nada** | **nada** (mesmo autenticado) |
+
+- `anon` não acessa nenhuma tabela. `event_log`, execuções e passos agendados são legíveis só pelo Head. Snapshots, eventos e funções de worker só o service role escreve/chama.
+- **Teste:** `npm install && npm run test:rls` roda 13 cenários por perfil num Postgres embutido (PGlite). Sem a migration 0004, 11 deles falham.
+
+### Ativar o login (uma vez)
+1. No Supabase aplique, nesta ordem: `schema.sql`, `0002`, `0003`, `0004`.
+2. **Authentication › Sign In / Providers › Email › desligue "Allow new users to sign up"** (a RLS já nega tudo a quem não está na equipe, mas não deixe a porta aberta).
+3. Crie os usuários em Authentication › Users (convite) e vincule ao perfil:
+   ```sql
+   -- ajuste os e-mails do seed.sql para os reais antes de rodar
+   update public.csm_users c set auth_id = u.id
+     from auth.users u where lower(u.email) = lower(c.email) and c.auth_id is null;
+   ```
+4. Preencha `public/config.js` com a **URL** e a chave **anon public** do projeto (são públicas por desenho; **nunca** a service role). Vazio = modo demonstração.
+5. Na Vercel, cadastre as variáveis do `.env.example` (as chaves de IA ficam **só lá**).
+
+Com o login ativo: o Painel Master abre por papel (`head`), sem senha local; o Copilot chama `/api/ai` com o JWT; **nenhuma chave de IA é digitada nem guardada no navegador** (chaves antigas salvas no `localStorage` são apagadas ao carregar).
+
+> ⚠️ Enquanto a carteira não for lida do banco (próxima etapa, P1), a tela mostra dados de demonstração do navegador mesmo com login. Uma faixa no topo avisa isso.

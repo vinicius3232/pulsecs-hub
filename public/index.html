@@ -48,6 +48,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" integrity="sha384-hJnF5AwidE18GSWTAGHv3ByzzvfNZ1Tcx5y1UUV3WkauuMCEzBJBMSwSt/PUPXnM" crossorigin="anonymous"></script>
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js" integrity="sha384-tuevtT+97g9yLeuT/m52ejUJbc0hzsN6MPLiQEccySreiGjrcgk2tMBJR7/l6HGM" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
 
   <style>
@@ -170,11 +172,42 @@
     .dark .nav-btn[aria-current="page"] { background-color: rgba(67, 165, 160, .14) !important; color: #aadbd7 !important; }
     .nav-btn[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--petrol); }
     .dark .nav-btn[aria-current="page"]::before { background: #43a5a0; }
+    /* ===== Login ===== */
+    body.auth-locked { overflow: hidden; }
+    #auth-gate { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; background: #f7f7f5; }
+    .dark #auth-gate { background: #0d0f0e; }
+    body.auth-locked #auth-gate { display: flex; }
+    body.auth-locked > header, body.auth-locked > div.flex-1, body.auth-locked #data-source-banner { visibility: hidden; }
+    body[data-role="viewer"] [onclick*="openNewClientModal"], body[data-role="viewer"] [onclick*="openEditClientModal"] { display: none !important; }
   </style>
 </head>
 
 <body class="bg-slate-50 dark:bg-darkbg-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200 selection:bg-brand-500 selection:text-white">
   <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+  <!-- ================= LOGIN (só aparece com Supabase configurado) ================= -->
+  <div id="auth-gate" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <form id="auth-form" class="w-full max-w-sm bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 rounded-2xl p-7 space-y-4" novalidate>
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-brand-600 flex items-center justify-center text-white"><i data-lucide="activity" class="w-5 h-5"></i></div>
+        <div>
+          <h2 id="auth-title" class="font-bold text-lg text-slate-900 dark:text-white leading-tight">Entrar no PulseCS</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Acesso restrito à equipe de Customer Success.</p>
+        </div>
+      </div>
+      <div>
+        <label for="auth-email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
+        <input id="auth-email" type="email" autocomplete="username" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
+      </div>
+      <div>
+        <label for="auth-password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Senha</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
+      </div>
+      <p id="auth-message" role="alert" class="text-xs min-h-[1rem] text-rose-600 dark:text-rose-400"></p>
+      <button id="auth-submit" type="submit" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors">Entrar</button>
+      <button id="auth-reset" type="button" class="w-full text-xs text-slate-500 dark:text-slate-400 underline">Esqueci minha senha</button>
+    </form>
+  </div>
 
   <!-- ================= TOP APP BAR ================= -->
   <header class="sticky top-0 z-40 bg-white/85 dark:bg-darkbg-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 lg:px-8 py-2.5 flex items-center justify-between gap-4 transition-colors">
@@ -238,6 +271,15 @@
         <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
       </button>
 
+      <!-- Usuário logado -->
+      <div id="auth-user-chip" class="hidden items-center gap-2 pl-2 ml-1 border-l border-slate-200 dark:border-slate-800">
+        <span class="text-xs leading-tight text-right hidden sm:block">
+          <span id="auth-user-name" class="block font-semibold text-slate-800 dark:text-slate-200"></span>
+          <span id="auth-user-role" class="block text-slate-500 dark:text-slate-400"></span>
+        </span>
+        <button id="auth-signout" type="button" onclick="PulseAuth.signOut()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800">Sair</button>
+      </div>
+
       <!-- Notificações -->
       <button onclick="toggleNotificationMenu()" class="relative p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-darkbg-850 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white active:scale-95 transition-all">
         <i data-lucide="bell" class="w-4 h-4"></i>
@@ -246,6 +288,9 @@
       </button>
     </div>
   </header>
+
+  <!-- Origem dos dados: deixa claro o que é demonstração -->
+  <div id="data-source-banner" class="hidden px-4 lg:px-8 py-1.5 text-xs border-b border-amber-300 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300" role="status"></div>
 
   <!-- ================= MAIN LAYOUT ================= -->
   <div class="flex-1 flex overflow-hidden">
@@ -1937,11 +1982,11 @@
           <input type="text" id="cfg-ai-endpoint" placeholder="http://localhost:20128/v1" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
         </div>
 
-        <!-- Chave de API -->
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Chave de API (Bearer Token):</label>
-          <input type="password" id="cfg-ai-key" placeholder="sk-..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
-          <span class="text-[11px] text-slate-500 mt-0.5 block">Sua chave é armazenada de forma segura e exclusiva no seu navegador (localStorage).</span>
+        <!-- Chave de API: fica só no servidor -->
+        <div class="p-3 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 text-slate-700 dark:text-slate-300 leading-relaxed">
+          <strong class="block text-slate-900 dark:text-white mb-0.5">Chaves de IA ficam no servidor</strong>
+          As chaves (Groq, Gemini, OpenAI) são cadastradas como variáveis de ambiente na Vercel e nunca passam pelo navegador.
+          Aqui você escolhe só o provedor e o modelo; a chamada exige login.
         </div>
 
         <!-- Botão Testar Conexão -->
@@ -2392,7 +2437,6 @@
       aiProvider: 'groq',
       aiEndpoint: 'https://api.groq.com/openai/v1',
       aiModel: 'llama-3.3-70b-versatile',
-      aiKey: '',
       inactivityThresholdDays: 7,
       onboardingSlaDays: 30,
       googleSheetsWebhookUrl: '',
@@ -2401,6 +2445,7 @@
     };
 
     delete appConfig.masterPassword; // legado: senha em texto puro
+    if ('aiKey' in appConfig) { delete appConfig.aiKey; localStorage.setItem('pulsecs_config', JSON.stringify(appConfig)); } // legado: chave de IA no navegador
     let activeClientForModal = null;
     let activeClientForNotes = null;
     let activeCalendarEventModal = null;
@@ -3236,7 +3281,6 @@
       document.getElementById('cfg-ai-provider').value = appConfig.aiProvider;
       document.getElementById('cfg-ai-endpoint').value = appConfig.aiEndpoint;
       document.getElementById('cfg-ai-model').value = appConfig.aiModel;
-      document.getElementById('cfg-ai-key').value = appConfig.aiKey;
       document.getElementById('cfg-rule-inactivity-days').value = appConfig.inactivityThresholdDays;
       document.getElementById('cfg-rule-onboarding-sla').value = appConfig.onboardingSlaDays;
 
@@ -3298,46 +3342,38 @@
 
     async function testAIConnection() {
       const provider = document.getElementById('cfg-ai-provider').value;
-      const endpoint = document.getElementById('cfg-ai-endpoint').value;
-      const key = document.getElementById('cfg-ai-key').value;
+      const model = document.getElementById('cfg-ai-model').value.trim();
       const pingStatus = document.getElementById('cfg-ping-status');
       const pingIndicator = document.getElementById('cfg-ping-indicator');
-
-      pingStatus.textContent = 'Testando ping...';
-      pingIndicator.className = 'w-3 h-3 rounded-full bg-amber-500 animate-ping';
+      const setState = (text, color) => { pingStatus.textContent = text; pingIndicator.className = 'w-3 h-3 rounded-full bg-' + color + '-500'; };
 
       if (provider === 'mock') {
-        setTimeout(() => {
-          pingStatus.textContent = 'Modo Simulado Pro (Offline 100% Funcional)';
-          pingIndicator.className = 'w-3 h-3 rounded-full bg-emerald-500';
-          showToast('Modo Simulado verificado e pronto para uso.', 'info');
-        }, 500);
+        setState('Modo Simulado Pro (offline)', 'emerald');
+        showToast('Modo Simulado verificado e pronto para uso.', 'info');
         return;
       }
-
+      const token = window.PulseAuth && PulseAuth.token();
+      if (!token) {
+        setState('Faça login para testar a IA do servidor', 'amber');
+        showToast('A IA roda no servidor e exige login.', 'warning');
+        return;
+      }
+      setState('Testando...', 'amber');
       try {
         const start = performance.now();
-        const res = await fetch(`${endpoint}/models`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${key}`
-          }
+        const res = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ prompt: 'Responda apenas: OK', provider, model })
         });
-        const duration = Math.round(performance.now() - start);
-
-        if (res.ok) {
-          pingStatus.textContent = `🟢 Conectado com Sucesso (${duration}ms)`;
-          pingIndicator.className = 'w-3 h-3 rounded-full bg-emerald-500';
-          showToast(`Conexão com ${provider.toUpperCase()} estabelecida! (${duration}ms)`, 'success');
-        } else {
-          pingStatus.textContent = `🟡 Resposta com status ${res.status}`;
-          pingIndicator.className = 'w-3 h-3 rounded-full bg-amber-500';
-          showToast(`Provedor respondeu com status ${res.status}. Verifique sua Chave de API.`, 'warning');
-        }
+        const ms = Math.round(performance.now() - start);
+        if (res.ok) { setState('Conectado (' + ms + 'ms)', 'emerald'); showToast('Servidor de IA respondeu.', 'success'); }
+        else if (res.status === 401) { setState('Sessão inválida: entre novamente', 'rose'); showToast('Sessão expirada. Entre novamente.', 'warning'); }
+        else if (res.status === 503) { setState('Provedor sem chave no servidor', 'amber'); showToast('Cadastre a chave deste provedor na Vercel.', 'warning'); }
+        else { setState('Erro ' + res.status + ' do servidor', 'rose'); showToast('Falha ao consultar a IA (HTTP ' + res.status + ').', 'error'); }
       } catch (err) {
-        pingStatus.textContent = `🔴 Não foi possível conectar ao endpoint`;
-        pingIndicator.className = 'w-3 h-3 rounded-full bg-rose-500';
-        showToast(`Erro de conexão com ${endpoint}. Certifique-se de que o servidor está rodando.`, 'error');
+        setState('Sem conexão com o servidor', 'rose');
+        showToast('Não foi possível falar com o servidor.', 'error');
       }
     }
 
@@ -3345,7 +3381,6 @@
       appConfig.aiProvider = document.getElementById('cfg-ai-provider').value;
       appConfig.aiEndpoint = document.getElementById('cfg-ai-endpoint').value.trim();
       appConfig.aiModel = document.getElementById('cfg-ai-model').value.trim();
-      appConfig.aiKey = document.getElementById('cfg-ai-key').value.trim();
       appConfig.inactivityThresholdDays = parseInt(document.getElementById('cfg-rule-inactivity-days').value) || 7;
       appConfig.onboardingSlaDays = parseInt(document.getElementById('cfg-rule-onboarding-sla').value) || 30;
       appConfig.googleSheetsWebhookUrl = document.getElementById('cfg-google-sheets-webhook')?.value.trim() || '';
@@ -3631,8 +3666,8 @@
       chatBody.appendChild(userMsg);
       chatBody.scrollTop = chatBody.scrollHeight;
 
-      // 1. Tentativa Segura: Serverless Function /api/ai na Vercel (Sem expor chaves no cliente)
-      try {
+      // 1. Serverless /api/ai na Vercel: exige login e envia o JWT. Chaves ficam só no servidor.
+      if (window.PulseAuth && PulseAuth.token() && appConfig.aiProvider !== 'mock') try {
         const loadingMsg = document.createElement('div');
         loadingMsg.className = 'p-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 border border-slate-200 dark:border-slate-700/60 text-slate-400 text-xs flex items-center gap-2';
         loadingMsg.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-400"></i><span>Consultando Copilot Serverless...</span>';
@@ -3642,7 +3677,7 @@
 
         const serverlessRes = await fetch('/api/ai', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PulseAuth.token() },
           body: JSON.stringify({
             prompt: promptText,
             provider: appConfig.aiProvider,
@@ -3659,45 +3694,9 @@
           }
         }
         loadingMsg.remove();
+        if (serverlessRes.status === 401) showToast('Sessão expirada. Entre novamente.', 'warning');
       } catch (e) {
-        // Fallback para execução local/offline se não estiver rodando sob a Vercel
-      }
-
-      if (appConfig.aiProvider !== 'mock' && appConfig.aiKey && appConfig.aiEndpoint) {
-        const loadingMsg = document.createElement('div');
-        loadingMsg.className = 'p-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 border border-slate-200 dark:border-slate-700/60 text-slate-400 text-xs flex items-center gap-2';
-        loadingMsg.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-400"></i><span>Consultando modelo ' + esc(appConfig.aiModel) + '...</span>';
-        chatBody.appendChild(loadingMsg);
-        lucide.createIcons();
-        chatBody.scrollTop = chatBody.scrollHeight;
-
-        try {
-          const response = await fetch(`${appConfig.aiEndpoint}/chat/completions`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${appConfig.aiKey}`
-            },
-            body: JSON.stringify({
-              model: appConfig.aiModel,
-              messages: [
-                { role: 'system', content: 'Você é o Pulse Copilot, assistente inteligente de Customer Success e Onboarding de um SaaS B2B. Responda de forma executiva, objetiva e tática.' },
-                { role: 'user', content: promptText }
-              ],
-              temperature: 0.7
-            })
-          });
-
-          loadingMsg.remove();
-          if (response.ok) {
-            const data = await response.json();
-            const aiReply = data.choices?.[0]?.message?.content || 'Sem resposta do modelo.';
-            renderCopilotBotReply(esc(aiReply).replace(/\n/g, '<br>'), appConfig.aiModel);
-            return;
-          }
-        } catch (err) {
-          loadingMsg.remove();
-        }
+        // Sem servidor: cai para o modo simulado local
       }
 
       setTimeout(() => {
@@ -4595,6 +4594,126 @@
       showToast('Relatório oficial de Auditoria LGPD gerado e baixado com sucesso!', 'success');
     }
   </script>
+  <script>
+    // ===== Login (Supabase Auth) =====
+    // O front só controla a experiência. A proteção real é a RLS do banco (migration 0004)
+    // e a validação do JWT nas funções /api.
+    (function () {
+      const cfg = window.PULSECS_CONFIG || {};
+      const enabled = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase && window.supabase.createClient);
+      const ROLE_LABEL = { head: 'Head de CS', csm: 'CSM', is: 'Implementação', viewer: 'Leitura' };
+      const $ = id => document.getElementById(id);
+      const state = { session: null, profile: null };
+      let sb = null, failures = 0, lockedUntil = 0;
+
+      window.PulseAuth = {
+        enabled,
+        token: () => (state.session && state.session.access_token) || null,
+        role: () => (state.profile && state.profile.role) || null,
+        profile: () => state.profile,
+        signOut: async () => { if (sb) await sb.auth.signOut(); }
+      };
+
+      function banner(text) {
+        const b = $('data-source-banner');
+        if (!b) return;
+        if (!text) { b.classList.add('hidden'); return; }
+        b.textContent = text;
+        b.classList.remove('hidden');
+      }
+
+      if (!enabled) {
+        banner('Modo demonstração: sem login e com dados locais deste navegador. Configure public/config.js para ativar o login.');
+        return;
+      }
+
+      sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
+      PulseAuth.client = sb;
+      document.body.classList.add('auth-locked');
+
+      function message(text, ok) {
+        const m = $('auth-message');
+        m.textContent = text || '';
+        m.className = 'text-xs min-h-[1rem] ' + (ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400');
+      }
+
+      function showGate(text) {
+        state.profile = null;
+        document.body.classList.add('auth-locked');
+        document.body.removeAttribute('data-role');
+        $('auth-user-chip').classList.add('hidden');
+        $('auth-user-chip').classList.remove('flex');
+        banner('');
+        if (text) message(text);
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => { const e = $('auth-email'); if (e) e.focus(); }, 50);
+      }
+
+      async function enter(session) {
+        // Papel vem do banco (csm_users), nunca do token nem do navegador
+        const { data, error } = await sb.from('csm_users').select('id, name, role, is_active').eq('auth_id', session.user.id).maybeSingle();
+        if (error || !data || !data.is_active) {
+          await sb.auth.signOut();
+          showGate('Seu acesso ainda não foi liberado. Peça ao Head de CS para vincular o seu e-mail.');
+          return;
+        }
+        state.profile = data;
+        document.body.classList.remove('auth-locked');
+        document.body.setAttribute('data-role', data.role);
+        $('auth-user-name').textContent = data.name;
+        $('auth-user-role').textContent = ROLE_LABEL[data.role] || data.role;
+        $('auth-user-chip').classList.remove('hidden');
+        $('auth-user-chip').classList.add('flex');
+        message('');
+        $('auth-password').value = '';
+        banner('Sessão ativa. A carteira exibida ainda vem dos dados locais de demonstração deste navegador; a sincronização com o banco é a próxima etapa.');
+      }
+
+      // Não chamar o Supabase direto dentro do callback (risco de deadlock): adia para o próximo ciclo
+      sb.auth.onAuthStateChange((_evt, session) => {
+        state.session = session || null;
+        setTimeout(() => { session ? enter(session) : showGate(); }, 0);
+      });
+
+      $('auth-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        if (Date.now() < lockedUntil) { message('Muitas tentativas. Aguarde alguns segundos.'); return; }
+        const email = $('auth-email').value.trim();
+        const password = $('auth-password').value;
+        if (!email || !password) { message('Informe e-mail e senha.'); return; }
+        $('auth-submit').disabled = true;
+        message('');
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        $('auth-submit').disabled = false;
+        if (error) {
+          failures++;
+          if (failures >= 5) { lockedUntil = Date.now() + 30000; failures = 0; }
+          // Mensagem única: não revela se o e-mail existe
+          message('E-mail ou senha incorretos.');
+          $('auth-password').value = '';
+          $('auth-password').focus();
+        } else {
+          failures = 0;
+        }
+      });
+
+      $('auth-reset').addEventListener('click', async () => {
+        const email = $('auth-email').value.trim();
+        if (!email) { message('Digite seu e-mail e clique em "Esqueci minha senha".'); $('auth-email').focus(); return; }
+        await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin });
+        message('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.', true);
+      });
+
+      // Painel Master: com login, quem decide é o papel (head); sem senha local
+      const originalOpenMaster = window.openMasterAuthModal;
+      window.openMasterAuthModal = function () {
+        if (PulseAuth.role() === 'head') { openMasterConfigModal(); return; }
+        showToast('Somente o Head de CS acessa as configurações.', 'warning');
+      };
+      window.__originalOpenMasterAuthModal = originalOpenMaster;
+    })();
+  </script>
+
   <script>
     // ===== Visões salvas da carteira =====
     // Uma visão = filtros + ordenação. Presets fixos + visões pessoais (localStorage 'pulsecs_views').
