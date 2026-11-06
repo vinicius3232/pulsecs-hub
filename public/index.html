@@ -788,6 +788,14 @@
 
         <!-- Filtros & Tabela Interativa de Clientes -->
         <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+          <!-- Visões salvas -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Visões</span>
+              <span id="wallet-count" aria-live="polite" class="text-xs text-slate-500 dark:text-slate-400"></span>
+            </div>
+            <div id="views-bar" class="flex flex-wrap items-center gap-2"></div>
+          </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="relative flex-1 max-w-md">
               <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
@@ -805,6 +813,24 @@
                 <option value="green">Verde (Saudável)</option>
                 <option value="yellow">Atenção (Alerta)</option>
                 <option value="red">Crítico (Risco de Churn)</option>
+              </select>
+              <select id="wallet-filter-phase" aria-label="Filtrar por fase" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+                <option value="all">Todas as Fases</option>
+                <option value="onboarding">Em onboarding</option>
+                <option value="Kickoff">Kickoff</option>
+                <option value="Config & Carga">Config & Carga</option>
+                <option value="Treinamento">Treinamento</option>
+                <option value="Go-Live">Go-Live</option>
+              </select>
+              <select id="wallet-filter-owner" aria-label="Filtrar por responsável" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+                <option value="all">Todos os CSMs</option>
+              </select>
+              <select id="wallet-sort" aria-label="Ordenar" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+                <option value="none">Ordem padrão</option>
+                <option value="hs_asc">Menor score primeiro</option>
+                <option value="hs_desc">Maior score primeiro</option>
+                <option value="mrr_desc">Maior MRR primeiro</option>
+                <option value="name_asc">Nome (A–Z)</option>
               </select>
             </div>
           </div>
@@ -2607,16 +2633,28 @@
       const tbody = document.getElementById('wallet-table-body');
       if (!tbody) return;
 
-      const searchTerm = (document.getElementById('wallet-search')?.value || '').toLowerCase();
-      const tierFilter = document.getElementById('wallet-filter-tier')?.value || 'all';
-      const statusFilter = document.getElementById('wallet-filter-status')?.value || 'all';
+      const f = readWalletFilters();
+      const searchTerm = f.search.toLowerCase();
 
       const filtered = clients.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm) || c.contact.toLowerCase().includes(searchTerm);
-        const matchesTier = tierFilter === 'all' || c.tier === tierFilter;
-        const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-        return matchesSearch && matchesTier && matchesStatus;
+        const matchesTier = f.tier === 'all' || c.tier === f.tier;
+        const matchesStatus = f.status === 'all' || c.status === f.status;
+        const matchesPhase = f.phase === 'all' || (f.phase === 'onboarding' ? c.phase !== 'Go-Live' : c.phase === f.phase);
+        const matchesOwner = f.owner === 'all' || String(c.csmId) === f.owner;
+        return matchesSearch && matchesTier && matchesStatus && matchesPhase && matchesOwner;
       });
+      const cmp = WALLET_SORTS[f.sort];
+      if (cmp) filtered.sort(cmp);
+
+      const countEl = document.getElementById('wallet-count');
+      if (countEl) countEl.textContent = filtered.length === clients.length ? clients.length + ' clientes' : filtered.length + ' de ' + clients.length + ' clientes';
+      if (typeof renderWalletViews === 'function') renderWalletViews();
+
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Nenhum cliente com esses filtros. <button type="button" onclick="applyWalletView(\'all\')" class="underline text-brand-600 dark:text-brand-400">Limpar filtros</button></td></tr>';
+        return;
+      }
 
       tbody.innerHTML = filtered.map(c => {
         const hsColor = c.hs >= 75 ? 'text-emerald-400' : (c.hs >= 60 ? 'text-amber-400' : 'text-rose-400');
@@ -4557,6 +4595,200 @@
       showToast('Relatório oficial de Auditoria LGPD gerado e baixado com sucesso!', 'success');
     }
   </script>
+  <script>
+    // ===== Visões salvas da carteira =====
+    // Uma visão = filtros + ordenação. Presets fixos + visões pessoais (localStorage 'pulsecs_views').
+    // No Supabase a mesma estrutura vive em public.saved_views (migration 0003).
+    const WALLET_SORTS = {
+      none: null,
+      hs_asc: (a, b) => a.hs - b.hs,
+      hs_desc: (a, b) => b.hs - a.hs,
+      mrr_desc: (a, b) => b.mrr - a.mrr,
+      name_asc: (a, b) => a.name.localeCompare(b.name, 'pt-BR')
+    };
+    const WALLET_FILTER_IDS = { search: 'wallet-search', tier: 'wallet-filter-tier', status: 'wallet-filter-status', phase: 'wallet-filter-phase', owner: 'wallet-filter-owner', sort: 'wallet-sort' };
+    const WALLET_DEFAULTS = { search: '', tier: 'all', status: 'all', phase: 'all', owner: 'all', sort: 'none' };
+    const WALLET_PRESETS = [
+      { id: 'all', name: 'Todas', filters: {} },
+      { id: 'risk', name: 'Em risco', filters: { status: 'red', sort: 'hs_asc' } },
+      { id: 'attention', name: 'Atenção', filters: { status: 'yellow', sort: 'hs_asc' } },
+      { id: 'onboarding', name: 'Em onboarding', filters: { phase: 'onboarding', sort: 'hs_asc' } },
+      { id: 'top', name: 'Maiores contas', filters: { sort: 'mrr_desc' } },
+      { id: 'enterprise-ok', name: 'Enterprise saudáveis', filters: { tier: 'Enterprise', status: 'green', sort: 'mrr_desc' } }
+    ];
+    const VIEW_NAME_MAX = 60;
+    const VIEWS_KEY = 'pulsecs_views';
+    let savingWalletView = false;
+
+    function readWalletFilters() {
+      const f = { ...WALLET_DEFAULTS };
+      for (const k of Object.keys(WALLET_FILTER_IDS)) {
+        const el = document.getElementById(WALLET_FILTER_IDS[k]);
+        if (el && el.value !== '') f[k] = el.value;
+      }
+      return f;
+    }
+
+    function sameFilters(a, b) {
+      return Object.keys(WALLET_DEFAULTS).every(k => (a[k] ?? WALLET_DEFAULTS[k]) === (b[k] ?? WALLET_DEFAULTS[k]));
+    }
+
+    // Sanitiza o que vem do localStorage: só valores conhecidos entram no estado
+    function loadCustomViews() {
+      let raw = [];
+      try { raw = JSON.parse(localStorage.getItem(VIEWS_KEY) || '[]'); } catch (e) { raw = []; }
+      if (!Array.isArray(raw)) return [];
+      const owners = new Set(['all', ...teamCSMs.map(t => String(t.id))]);
+      const allowed = {
+        tier: new Set(['all', 'Enterprise', 'Mid-Market', 'SMB']),
+        status: new Set(['all', 'green', 'yellow', 'red']),
+        phase: new Set(['all', 'onboarding', 'Kickoff', 'Config & Carga', 'Treinamento', 'Go-Live']),
+        owner: owners,
+        sort: new Set(Object.keys(WALLET_SORTS))
+      };
+      return raw.filter(v => v && typeof v.id === 'string' && typeof v.name === 'string' && v.filters && typeof v.filters === 'object')
+        .map(v => {
+          const filters = { ...WALLET_DEFAULTS, search: typeof v.filters.search === 'string' ? v.filters.search.slice(0, 80) : '' };
+          for (const k of Object.keys(allowed)) if (allowed[k].has(v.filters[k])) filters[k] = v.filters[k];
+          return { id: v.id.slice(0, 40), name: v.name.slice(0, VIEW_NAME_MAX), filters, custom: true };
+        });
+    }
+
+    function persistCustomViews(list) {
+      localStorage.setItem(VIEWS_KEY, JSON.stringify(list.map(v => ({ id: v.id, name: v.name, filters: v.filters }))));
+    }
+
+    function allWalletViews() {
+      return [
+        ...WALLET_PRESETS.map(v => ({ ...v, filters: { ...WALLET_DEFAULTS, ...v.filters } })),
+        ...loadCustomViews()
+      ];
+    }
+
+    function applyWalletView(id) {
+      const v = allWalletViews().find(x => x.id === id);
+      if (!v) return;
+      for (const k of Object.keys(WALLET_FILTER_IDS)) {
+        const el = document.getElementById(WALLET_FILTER_IDS[k]);
+        if (el) el.value = v.filters[k];
+      }
+      savingWalletView = false;
+      renderClientTable();
+    }
+
+    function startSavingWalletView() { savingWalletView = true; renderWalletViews(); const i = document.getElementById('view-name-input'); if (i) i.focus(); }
+    function cancelSavingWalletView() { savingWalletView = false; renderWalletViews(); }
+
+    function confirmSaveWalletView() {
+      const input = document.getElementById('view-name-input');
+      const name = (input?.value || '').trim().replace(/\s+/g, ' ').slice(0, VIEW_NAME_MAX);
+      if (!name) { showToast('Dê um nome para a visão.', 'warning'); input?.focus(); return; }
+      const list = loadCustomViews();
+      const f = readWalletFilters();
+      const existing = list.find(v => v.name.toLowerCase() === name.toLowerCase());
+      if (existing) { existing.filters = f; }
+      else {
+        if (list.length >= 20) { showToast('Limite de 20 visões pessoais.', 'warning'); return; }
+        list.push({ id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, filters: f, custom: true });
+      }
+      persistCustomViews(list);
+      savingWalletView = false;
+      renderWalletViews();
+      showToast(existing ? 'Visão "' + name + '" atualizada.' : 'Visão "' + name + '" salva.', 'success');
+    }
+
+    function deleteWalletView(id) {
+      const list = loadCustomViews();
+      const v = list.find(x => x.id === id);
+      if (!v) return;
+      persistCustomViews(list.filter(x => x.id !== id));
+      renderWalletViews();
+      showToast('Visão "' + v.name + '" excluída.', 'info');
+    }
+
+    function renderWalletViews() {
+      const bar = document.getElementById('views-bar');
+      if (!bar) return;
+      const current = readWalletFilters();
+      bar.textContent = '';
+
+      const chipBase = 'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ';
+      const idle = 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800';
+      const on = 'bg-brand-50 dark:bg-brand-900/30 border-brand-500 text-brand-700 dark:text-brand-200';
+
+      for (const v of allWalletViews()) {
+        const active = sameFilters(current, v.filters);
+        const wrap = document.createElement('span');
+        wrap.className = 'inline-flex items-center';
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = chipBase + (active ? on : idle) + (v.custom ? ' rounded-r-none' : '');
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        b.textContent = v.name;
+        b.onclick = () => applyWalletView(v.id);
+        wrap.appendChild(b);
+        if (v.custom) {
+          const x = document.createElement('button');
+          x.type = 'button';
+          x.className = chipBase + 'rounded-l-none border-l-0 ' + (active ? on : idle);
+          x.setAttribute('aria-label', 'Excluir visão ' + v.name);
+          x.title = 'Excluir visão';
+          x.textContent = '×';
+          x.onclick = () => deleteWalletView(v.id);
+          wrap.appendChild(x);
+        }
+        bar.appendChild(wrap);
+      }
+
+      const dirty = !allWalletViews().some(v => sameFilters(current, v.filters));
+      if (savingWalletView) {
+        const form = document.createElement('form');
+        form.className = 'inline-flex items-center gap-2';
+        form.onsubmit = e => { e.preventDefault(); confirmSaveWalletView(); };
+        const input = document.createElement('input');
+        input.id = 'view-name-input';
+        input.type = 'text';
+        input.maxLength = VIEW_NAME_MAX;
+        input.placeholder = 'Nome da visão';
+        input.setAttribute('aria-label', 'Nome da visão');
+        input.className = 'px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500';
+        const ok = document.createElement('button');
+        ok.type = 'submit';
+        ok.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700';
+        ok.textContent = 'Salvar';
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = chipBase + idle;
+        cancel.textContent = 'Cancelar';
+        cancel.onclick = cancelSavingWalletView;
+        form.append(input, ok, cancel);
+        bar.appendChild(form);
+      } else {
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = chipBase + 'border-dashed ' + idle;
+        save.textContent = '+ Salvar visão atual';
+        save.title = dirty ? 'Salvar os filtros atuais como uma visão' : 'Os filtros atuais já correspondem a uma visão';
+        save.onclick = startSavingWalletView;
+        bar.appendChild(save);
+      }
+    }
+
+    // Popular o filtro de responsável uma única vez e desenhar as visões
+    document.addEventListener('DOMContentLoaded', () => {
+      const sel = document.getElementById('wallet-filter-owner');
+      if (sel && sel.options.length === 1) {
+        for (const t of teamCSMs) {
+          const o = document.createElement('option');
+          o.value = String(t.id);
+          o.textContent = t.name;
+          sel.appendChild(o);
+        }
+      }
+      renderWalletViews();
+    });
+  </script>
+
   <script>
     // ===== Acessibilidade, teclado e menu mobile =====
     function openSidebar() {

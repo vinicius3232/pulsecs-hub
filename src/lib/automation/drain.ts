@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { runAutomationForEvent } from './engine.js';
+import { resumeScheduledStep, runAutomationForEvent } from './engine.js';
 import type { AutomationStore, EventRow, HandlerResult } from './types.js';
 
 export const MAX_ATTEMPTS = 5;
@@ -89,4 +89,44 @@ async function alertDeadEvent(store: AutomationStore, event: EventRow, message: 
   } catch {
     // Avisar não pode derrubar o dreno.
   }
+}
+
+export interface ScheduledSummary {
+  scanned: number;
+  resumed: number;
+  cancelled: number;
+  retried: number;
+  failed: number;
+}
+
+/**
+ * Retoma os passos pausados por `delay` cujo horário chegou.
+ * Falha → volta à fila com espera 2^n minutos; 5 tentativas → "failed".
+ */
+export async function drainScheduled(
+  store: AutomationStore,
+  opts: { limit?: number; now?: () => number } = {}
+): Promise<ScheduledSummary> {
+  const now = opts.now ?? Date.now;
+  const summary: ScheduledSummary = { scanned: 0, resumed: 0, cancelled: 0, retried: 0, failed: 0 };
+  const steps = await store.claimDueScheduled(opts.limit ?? 20);
+  summary.scanned = steps.length;
+
+  for (const step of steps) {
+    try {
+      const outcome = await resumeScheduledStep(store, step, { now });
+      if (outcome === 'cancelled') summary.cancelled++;
+      else summary.resumed++;
+    } catch (err) {
+      const message = (err instanceof Error ? err.message : String(err)).slice(0, MAX_ERROR_LEN);
+      if (step.attempts >= MAX_ATTEMPTS) {
+        await store.finishScheduled(step.id, 'failed', message);
+        summary.failed++;
+      } else {
+        await store.retryScheduled(step.id, backoffAt(step.attempts, now()), message);
+        summary.retried++;
+      }
+    }
+  }
+  return summary;
 }

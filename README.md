@@ -122,8 +122,24 @@ Copie `.env.example` e cadastre os valores em **Vercel > Settings > Environment 
 ## ⚙️ Event log + motor de automação
 Padrão adaptado do DeskcommCRM (MIT): triggers do Postgres só gravam em `event_log`; um cron drena a fila.
 
-- **Aplicar:** `supabase/schema.sql` e depois `supabase/migrations/0002_event_log_automation.sql` (idempotente).
+- **Aplicar, nesta ordem:** `supabase/schema.sql`, `supabase/migrations/0002_event_log_automation.sql` e `supabase/migrations/0003_workflow_steps_and_views.sql` (idempotentes).
 - **Eventos:** `company.created`, `company.health_changed`, `company.phase_changed` (triggers) e `company.renewal_due` (90/60/30 dias) e `company.rh_inactive` (14 dias sem login), emitidos por `fn_emit_time_events()` sem duplicar.
-- **Regras:** tabela `automation_rules` (QUANDO / SE em AND / ENTÃO). Condições: `eq neq contains gt gte lt lte`. Templates `{{company.name}}`. Ação disponível: `create_task` (no máximo 1 tarefa aberta por regra+empresa). 4 regras padrão já vêm na migration.
+- **Regras:** tabela `automation_rules` (QUANDO / SE em AND / ENTÃO). Condições: `eq neq contains gt gte lt lte`. Templates `{{company.name}}`. Regras padrão já vêm nas migrations.
 - **Execução:** `GET /api/cron/drain-events` (Vercel Cron, 1x/dia no plano Hobby; exige `CRON_SECRET`). Falha → retry com backoff 2^n min; 5 falhas → `dead` + tarefa crítica para o Head.
 - **Testes:** `npm test` (lógica do motor).
+
+### Passos das regras (ENTÃO)
+| Passo | Config | Observações |
+|---|---|---|
+| `create_task` | `title`, `body?`, `severity?` | No máximo 1 tarefa aberta por regra+empresa |
+| `add_note` | `content` | Grava na linha do tempo (`interactions`, canal `note`) |
+| `http_request` | `url`, `method?`, `body?` | **Só hosts em `AUTOMATION_HTTP_ALLOWLIST`**, HTTPS, sem IP/localhost/credenciais, sem redirecionamento. Vazia = nega tudo |
+| `delay` | `days?`, `hours?` (até 90 dias) | Só no nível raiz. A regra pausa e o cron a retoma, **refazendo o contexto** (empresa de agora) |
+| `if` | `conditions`, `then`, `else?` | Ramos aceitam os demais passos (sem `delay`); aninhável até 5 níveis |
+
+- **Atenção ao delay:** o cron roda 1x/dia no plano Hobby, então a retomada acontece na próxima execução depois do horário. Em Pro, agende com mais frequência.
+- **Entrega "pelo menos uma vez":** se a retomada falhar no meio, o passo é repetido. `create_task` é idempotente; `add_note` e `http_request` podem repetir.
+- **Execução manual:** `POST /api/automation/run` com `{ "rule_id", "company_id" }` e `Authorization: Bearer <JWT do Supabase>`. A regra precisa ter `trigger_event = "manual.run"`. Head executa em qualquer empresa; CSM só nas suas. Roda na hora (não espera o cron).
+
+### Views salvas da carteira
+Dashboard › Carteira: visões prontas (Em risco, Atenção, Em onboarding, Maiores contas, Enterprise saudáveis) e visões pessoais ("+ Salvar visão atual"). Uma visão guarda busca, plano, saúde, fase, responsável e ordenação. No protótipo ficam em `localStorage` (`pulsecs_views`); a tabela `public.saved_views` (migration 0003, com RLS) está pronta para quando o front usar o Supabase.

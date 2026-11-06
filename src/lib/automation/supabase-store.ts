@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { AutomationStore, NewTask, RuleRow, RunStatus, ActionResult } from './types.js';
+import type {
+  ActionResult, AutomationStore, NewNote, NewScheduledStep, NewTask, RuleRow, RunStatus, ScheduledStep
+} from './types.js';
 
 const PG_UNIQUE_VIOLATION = '23505';
 
@@ -12,12 +14,22 @@ export function createSupabaseStore(admin: SupabaseClient): AutomationStore {
     async activeRulesFor(eventType) {
       const { data, error } = await admin
         .from('automation_rules')
-        .select('id, name, conditions, actions')
+        .select('id, name, conditions, actions, is_active')
         .eq('trigger_event', eventType)
         .eq('is_active', true)
         .order('created_at', { ascending: true });
       if (error) throw new Error(`rules: ${error.message}`);
       return (data ?? []) as RuleRow[];
+    },
+
+    async ruleById(id) {
+      const { data, error } = await admin
+        .from('automation_rules')
+        .select('id, name, conditions, actions, is_active')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) throw new Error(`rule: ${error.message}`);
+      return (data as RuleRow | null) ?? null;
     },
 
     async companyContext(companyId) {
@@ -45,24 +57,79 @@ export function createSupabaseStore(admin: SupabaseClient): AutomationStore {
       throw new Error(`task: ${error.message}`);
     },
 
-    async recordRun(run: { ruleId: string; eventId: string; status: RunStatus; actions: ActionResult[] }) {
-      const { error } = await admin.from('automation_rule_runs').insert({
-        rule_id: run.ruleId,
-        event_id: run.eventId,
-        status: run.status,
-        actions_result: run.actions
+    async addNote(note: NewNote) {
+      const { error } = await admin.from('interactions').insert({
+        company_id: note.companyId,
+        csm_id: note.csmId,
+        channel: 'note',
+        trigger_type: 'automation',
+        content: note.content,
+        status: 'sent'
       });
-      // Reprocesso do mesmo evento: a execução já está registrada.
-      if (error && error.code !== PG_UNIQUE_VIOLATION) throw new Error(`run: ${error.message}`);
+      if (error) throw new Error(`note: ${error.message}`);
+    },
 
-      if (!error) {
-        // Contador informativo (não é invariante): leitura + escrita é aceitável.
-        const { data } = await admin.from('automation_rules').select('run_count').eq('id', run.ruleId).maybeSingle();
-        await admin
-          .from('automation_rules')
-          .update({ last_run_at: new Date().toISOString(), run_count: (data?.run_count ?? 0) + 1 })
-          .eq('id', run.ruleId);
-      }
+    async recordRun(run: { ruleId: string; eventId: string; status: RunStatus; actions: ActionResult[] }) {
+      // Upsert por (regra, evento): a retomada de uma espera atualiza o mesmo registro.
+      const { error } = await admin
+        .from('automation_rule_runs')
+        .upsert(
+          { rule_id: run.ruleId, event_id: run.eventId, status: run.status, actions_result: run.actions },
+          { onConflict: 'rule_id,event_id' }
+        );
+      if (error) throw new Error(`run: ${error.message}`);
+
+      // Contador informativo (não é invariante): leitura + escrita é aceitável.
+      const { data } = await admin.from('automation_rules').select('run_count').eq('id', run.ruleId).maybeSingle();
+      await admin
+        .from('automation_rules')
+        .update({ last_run_at: new Date().toISOString(), run_count: (data?.run_count ?? 0) + 1 })
+        .eq('id', run.ruleId);
+    },
+
+    async getRunActions(ruleId, eventId) {
+      const { data } = await admin
+        .from('automation_rule_runs')
+        .select('actions_result')
+        .eq('rule_id', ruleId)
+        .eq('event_id', eventId)
+        .maybeSingle();
+      return ((data?.actions_result as ActionResult[] | undefined) ?? []).map(a => ({ ...a }));
+    },
+
+    async scheduleResume(step: NewScheduledStep) {
+      const { error } = await admin.from('automation_scheduled_steps').insert({
+        rule_id: step.ruleId,
+        event_id: step.eventId,
+        company_id: step.companyId,
+        event_type: step.eventType,
+        payload: step.payload,
+        next_index: step.nextIndex,
+        resume_at: step.resumeAt
+      });
+      if (!error) return 'scheduled';
+      if (error.code === PG_UNIQUE_VIOLATION) return 'duplicate';
+      throw new Error(`schedule: ${error.message}`);
+    },
+
+    async claimDueScheduled(limit) {
+      const { data, error } = await admin.rpc('fn_claim_scheduled_steps', { p_limit: limit });
+      if (error) throw new Error(`claim_scheduled: ${error.message}`);
+      return (data ?? []) as ScheduledStep[];
+    },
+
+    async finishScheduled(id, status, errorMsg) {
+      await admin
+        .from('automation_scheduled_steps')
+        .update({ status, last_error: errorMsg ? errorMsg.slice(0, 300) : null, locked_at: null })
+        .eq('id', id);
+    },
+
+    async retryScheduled(id, resumeAt, errorMsg) {
+      await admin
+        .from('automation_scheduled_steps')
+        .update({ status: 'pending', resume_at: resumeAt, last_error: errorMsg.slice(0, 300), locked_at: null })
+        .eq('id', id);
     }
   };
 }
