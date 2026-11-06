@@ -89,15 +89,49 @@
       transform: scale(1);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    /* ===== Acessibilidade & responsividade (UX) ===== */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 10px; background: #4f46e5; color: #fff; font-size: 13px; font-weight: 600; transition: top .15s; }
+    .skip-link:focus { top: 8px; }
+    :focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; border-radius: 6px; }
+    main:focus { outline: none; }
+    /* Piso de legibilidade: nada abaixo de 11px (rótulos auxiliares) e 12px (texto corrido) */
+    .text-\[9px\], .text-\[10px\] { font-size: 11px !important; }
+    .text-\[11px\] { font-size: 12px !important; }
+    /* Alvos de toque */
+    td button, th button, header button, button.p-1\.5 { min-width: 32px; min-height: 32px; }
+    @media (pointer: coarse), (max-width: 767px) {
+      header button, .nav-btn, td button, [role="button"] { min-height: 40px; min-width: 40px; }
+    }
+    /* Menu lateral em gaveta no mobile */
+    #sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 55; }
+    @media (max-width: 767px) {
+      #sidebar.open { display: flex !important; position: fixed; top: 0; bottom: 0; left: 0; z-index: 60; width: min(18rem, 85vw); box-shadow: 0 0 40px rgba(0,0,0,.55); }
+      #sidebar-backdrop.open { display: block; }
+      #badge-active-ai { display: none; }
+      header .font-extrabold { display: none; }
+      header .flex.items-center.gap-2 { gap: .375rem; }
+      header { gap: .5rem; padding-left: .75rem; padding-right: .75rem; }
+      main .flex.justify-between { flex-wrap: wrap; gap: .5rem; }
+      main button { max-width: 100%; }
+    }
+    @media (min-width: 768px) { #sidebar-backdrop, #btn-open-menu { display: none !important; } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
   </style>
 </head>
 
 <body class="bg-slate-50 dark:bg-darkbg-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200 selection:bg-brand-500 selection:text-white">
+  <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
 
   <!-- ================= TOP APP BAR ================= -->
   <header class="sticky top-0 z-40 bg-white/85 dark:bg-darkbg-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 lg:px-8 py-2.5 flex items-center justify-between gap-4 transition-colors">
     <!-- Brand & Workspace -->
     <div class="flex items-center gap-3">
+      <button id="btn-open-menu" type="button" onclick="toggleSidebar()" aria-label="Abrir menu de navegação" aria-controls="sidebar" aria-expanded="false" class="md:hidden p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-darkbg-850 text-slate-600 dark:text-slate-300">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
       <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20">
         <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i>
       </div>
@@ -166,7 +200,8 @@
   <div class="flex-1 flex overflow-hidden">
     
     <!-- ================= SIDEBAR ================= -->
-    <aside class="w-64 flex-shrink-0 bg-white dark:bg-darkbg-900 border-r border-slate-200 dark:border-slate-800/80 flex flex-col justify-between transition-colors hidden md:flex">
+    <div id="sidebar-backdrop" onclick="closeSidebar()" aria-hidden="true"></div>
+    <aside id="sidebar" class="w-64 flex-shrink-0 bg-white dark:bg-darkbg-900 border-r border-slate-200 dark:border-slate-800/80 flex flex-col justify-between transition-colors hidden md:flex">
       <div class="p-4 space-y-6 overflow-y-auto">
         <!-- SEÇÃO 1: GESTÃO DE CONTAS & AGENDA -->
         <div>
@@ -305,18 +340,19 @@
     </aside>
 
     <!-- ================= MAIN CONTENT AREA ================= -->
-    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-darkbg-950 transition-colors">
+    <main id="main-content" tabindex="-1" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-darkbg-950 transition-colors">
+      <h1 class="sr-only">PulseCS — Painel de Customer Success</h1>
       
       <!-- ============================================================== -->
       <!-- ABA 1: LEMBRETES & PLANILHAS (A Tela Replicada com Máximo Refinamento) -->
       <!-- ============================================================== -->
-      <section id="tab-reminders" class="tab-content space-y-6 animate-tab">
+      <section id="tab-reminders" class="tab-content hidden space-y-6 animate-tab">
         <!-- Header da Página -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">⏰</span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central de Lembretes & Controle Operacional</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central de Lembretes & Controle Operacional</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Rotinas semanais para manter suas planilhas de IS, reuniões e agendas 100% atualizadas e auditadas por IA.
@@ -621,10 +657,10 @@
       <!-- ============================================================== -->
       <!-- ABA 2: DASHBOARD & GRÁFICOS ANALÍTICOS (ESTILO DESKCOMM)      -->
       <!-- ============================================================== -->
-      <section id="tab-dashboard" class="tab-content hidden space-y-6 animate-tab">
+      <section id="tab-dashboard" class="tab-content space-y-6 animate-tab">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard Analítico & Carteira de Contas</h1>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard Analítico & Carteira de Contas</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Telemetria em tempo real, projeção de receita e acompanhamento de saúde da carteira.</p>
           </div>
           <div class="flex items-center gap-2.5">
@@ -713,13 +749,13 @@
               <input type="text" id="wallet-search" oninput="renderClientTable()" placeholder="Buscar cliente por nome, segmento ou contato..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
             </div>
             <div class="flex items-center gap-2">
-              <select id="wallet-filter-tier" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-filter-tier" aria-label="Filtrar por plano" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os Tiers</option>
                 <option value="Enterprise">Enterprise</option>
                 <option value="Mid-Market">Mid-Market</option>
                 <option value="SMB">SMB / Pro</option>
               </select>
-              <select id="wallet-filter-status" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-filter-status" aria-label="Filtrar por saúde" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os Status</option>
                 <option value="green">Verde (Saudável)</option>
                 <option value="yellow">Atenção (Alerta)</option>
@@ -760,7 +796,7 @@
               <span class="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 <i data-lucide="calendar" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Calendário Operacional de Clientes</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Calendário Operacional de Clientes</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Visão mensal e semanal de treinamentos, alinhamentos de risco e QBRs com briefings de IA integrados.
@@ -784,7 +820,8 @@
         </div>
 
         <!-- Grade Mensal do Calendário -->
-        <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+        <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm overflow-x-auto">
+         <div class="min-w-[640px] space-y-4">
           <!-- Dias da Semana Header -->
           <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">
             <div>Dom</div>
@@ -800,6 +837,7 @@
           <div id="calendar-grid-cells" class="grid grid-cols-7 gap-2 min-h-[500px]">
             <!-- Renderizado dinamicamente via JS -->
           </div>
+         </div>
         </div>
       </section>
 
@@ -813,7 +851,7 @@
               <span class="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
                 <i data-lucide="shield-alert" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Triagem de HS Baixo & Contenção de Churn</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Triagem de HS Baixo & Contenção de Churn</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Clientes com telemetria estagnada, queda brusca de engajamento ou sem login recente.</p>
           </div>
@@ -834,7 +872,7 @@
       <section id="tab-onboarding" class="tab-content hidden space-y-6 animate-tab">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Esteira de Onboarding & Implantação</h1>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Esteira de Onboarding & Implantação</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Acompanhe o Time-to-Value (TTV) dos novos clientes e remova gargalos técnicos.</p>
           </div>
           <button onclick="openNewClientModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-indigo-600/30 transition-all">
@@ -888,7 +926,7 @@
       <section id="tab-reports" class="tab-content hidden space-y-6 animate-tab">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Relatórios Executivos & QBR</h1>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Relatórios Executivos & QBR</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Consolidação automática de resultados para apresentação à diretoria e reuniões executivas.</p>
           </div>
           <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-2 active:scale-95 transition-all">
@@ -949,7 +987,7 @@
               <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <i data-lucide="send" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central Omnichannel & Régua de CS</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central Omnichannel & Régua de CS</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Disparos inteligentes para WhatsApp Web e Gmail com mensagens personalizadas geradas por IA para contenção de churn e ativação.
@@ -1136,7 +1174,7 @@
               <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
                 <i data-lucide="users" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Equipe de CS & Balanceamento de Carteira</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Equipe de CS & Balanceamento de Carteira</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Controle de capacidade de CSMs, equilíbrio de MRR e transferência dinâmica de contas para evitar gargalos operacionais.
@@ -1236,7 +1274,7 @@
               <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pipeline de Renovação & NRR</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pipeline de Renovação & NRR</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Controle antecipado de vencimentos contratuais (90, 60 e 30 dias) com prova de valor e defesa de ROI para o RH.
@@ -1345,7 +1383,7 @@
               <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                 <i data-lucide="megaphone" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kits para o RH & Campanhas Sazonais</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kits para o RH & Campanhas Sazonais</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Geração com IA de materiais de comunicação interna para o RH engajar os colaboradores e elevar a taxa de uso dos benefícios.
@@ -1482,7 +1520,7 @@
               <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <i data-lucide="store" class="w-5 h-5"></i>
               </span>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rede de Parceiros & Gestão LGPD</h1>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rede de Parceiros & Gestão LGPD</h2>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Mapeamento do mix de benefícios, categorias mais utilizadas, demandas regionais e auditoria de conformidade.
@@ -2199,7 +2237,7 @@
   </div>
 
   <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+  <div id="toast-container" role="status" aria-live="polite" aria-atomic="false" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- ================= JAVASCRIPT LOGIC & APP ENGINE ================= -->
   <script>
@@ -2345,6 +2383,8 @@
           switchTab(hashTab);
         }
       }
+      // Sem hash válido, abre no Dashboard (visão da carteira)
+      if (!document.getElementById('tab-' + window.location.hash.replace('#', ''))) switchTab('dashboard');
     });
 
     // --- 3. TROCA DE ABAS ---
@@ -2379,6 +2419,14 @@
       } else if (tabId === 'partners') {
         renderPartnersTab();
       }
+
+      document.querySelectorAll('.nav-btn').forEach(b => b.removeAttribute('aria-current'));
+      if (activeNav) activeNav.setAttribute('aria-current', 'page');
+      const tabHeading = activeTab && activeTab.querySelector('h2');
+      if (tabHeading) document.title = tabHeading.textContent.trim().replace(/\s+/g, ' ') + ' — PulseCS';
+      if (typeof closeSidebar === 'function') closeSidebar();
+      const mainEl = document.getElementById('main-content');
+      if (mainEl) mainEl.scrollTop = 0;
 
       lucide.createIcons();
     }
@@ -4427,6 +4475,147 @@
 
       showToast('Relatório oficial de Auditoria LGPD gerado e baixado com sucesso!', 'success');
     }
+  </script>
+  <script>
+    // ===== Acessibilidade, teclado e menu mobile =====
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebar-backdrop').classList.add('open');
+      const b = document.getElementById('btn-open-menu');
+      if (b) { b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-label', 'Fechar menu de navegação'); }
+    }
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      if (!sb) return;
+      sb.classList.remove('open');
+      document.getElementById('sidebar-backdrop').classList.remove('open');
+      const b = document.getElementById('btn-open-menu');
+      if (b) { b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', 'Abrir menu de navegação'); }
+    }
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+    (function () {
+      const NATIVE = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY'];
+      const ICON_NAMES = { bell: 'Notificações', settings: 'Configurações', moon: 'Alternar tema', sun: 'Alternar tema', x: 'Fechar', menu: 'Menu', 'edit-3': 'Editar', edit: 'Editar', trash: 'Excluir', 'trash-2': 'Excluir', send: 'Enviar', plus: 'Adicionar', copy: 'Copiar', download: 'Baixar', upload: 'Enviar arquivo', search: 'Buscar' };
+      const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+
+      function enhance(root) {
+        root = root || document;
+        // Ícones são decorativos
+        root.querySelectorAll('i[data-lucide], svg.lucide').forEach(i => i.setAttribute('aria-hidden', 'true'));
+
+        // Botões só com ícone: dá nome acessível
+        root.querySelectorAll('button, [role="button"]').forEach(b => {
+          if (b.getAttribute('aria-label')) return;
+          if (b.textContent.trim()) return;
+          const t = b.getAttribute('title');
+          const icon = b.querySelector('[data-lucide]');
+          const name = t || (icon && ICON_NAMES[icon.getAttribute('data-lucide')]) || (icon && icon.getAttribute('data-lucide'));
+          if (name) b.setAttribute('aria-label', name);
+        });
+
+        // Campos sem rótulo: usa o <label> vizinho, senão placeholder/title
+        root.querySelectorAll('input, select, textarea').forEach(f => {
+          if (f.type === 'hidden' || f.getAttribute('aria-label') || f.getAttribute('aria-labelledby')) return;
+          if (f.id && document.querySelector('label[for="' + f.id + '"]')) return;
+          if (f.closest('label')) return;
+          let name = '';
+          const box = f.parentElement;
+          const lab = box && (box.querySelector(':scope > label') || (box.parentElement && box.parentElement.querySelector(':scope > label')));
+          if (lab && lab.textContent.trim()) name = lab.textContent.trim().replace(/[:：]\s*$/, '');
+          if (!name) name = f.getAttribute('placeholder') || f.getAttribute('title') || '';
+          if (!name && f.type === 'checkbox') {
+            const row = f.closest('div');
+            name = row ? row.textContent.trim().replace(/\s+/g, ' ').slice(0, 80) : '';
+          }
+          if (name) f.setAttribute('aria-label', name);
+        });
+
+        // Elementos clicáveis que não são botões: papel, foco e Enter/Espaço
+        root.querySelectorAll('[onclick]').forEach(el => {
+          if (NATIVE.includes(el.tagName) || el.getAttribute('role')) return;
+          el.setAttribute('role', 'button');
+          if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+        });
+
+        // Rótulos para as 3 <nav> do menu
+        document.querySelectorAll('#sidebar nav').forEach((n, i) => {
+          if (n.getAttribute('aria-label')) return;
+          const head = n.previousElementSibling;
+          n.setAttribute('aria-label', head && head.textContent.trim() ? head.textContent.trim() : 'Menu ' + (i + 1));
+        });
+      }
+
+      // Enter/Espaço ativam os "botões" não nativos
+      document.addEventListener('keydown', e => {
+        const el = e.target;
+        if (!el || !el.getAttribute || el.getAttribute('role') !== 'button' || NATIVE.includes(el.tagName)) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+      });
+
+      // Modais e gavetas: papel de diálogo, foco inicial, foco preso e retorno do foco
+      const DIALOGS = {
+        'calendar-meeting-modal': 'Detalhes da reunião',
+        'master-auth-modal': 'Acesso Master',
+        'master-config-modal': 'Configurações Master',
+        'client-form-modal': 'Cadastro de cliente',
+        'client-modal': 'Raio-X do cliente',
+        'notes-modal': 'Notas da chamada'
+      };
+      const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+      // O app foca um campo do modal ANTES do observer rodar; por isso o "opener" é o último foco fora de diálogos.
+      let lastOutside = null;
+      document.addEventListener('focusin', e => { if (!e.target.closest('[role="dialog"]')) lastOutside = e.target; });
+      // Cliques também contam (nem todo ambiente dispara focusin ao clicar num botão)
+      document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [role="button"], a'); if (b && !b.closest('[role="dialog"]')) lastOutside = b; }, true);
+
+      function watchDialog(el, label, isOpen) {
+        if (!el) return;
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+        el.setAttribute('aria-label', label);
+        let opener = null, wasOpen = isOpen(el);
+        new MutationObserver(() => {
+          const open = isOpen(el);
+          if (open && !wasOpen) {
+            opener = lastOutside || document.activeElement;
+            requestAnimationFrame(() => {
+              const f = [...el.querySelectorAll(FOCUSABLE)].filter(visible);
+              if (f[0]) f[0].focus();
+            });
+          } else if (!open && wasOpen && opener && opener.focus) {
+            opener.focus();
+          }
+          wasOpen = open;
+        }).observe(el, { attributes: true, attributeFilter: ['class'] });
+        el.addEventListener('keydown', e => {
+          if (e.key !== 'Tab') return;
+          const f = [...el.querySelectorAll(FOCUSABLE)].filter(visible);
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        Object.keys(DIALOGS).forEach(id => watchDialog(document.getElementById(id), DIALOGS[id], el => !el.classList.contains('hidden')));
+        watchDialog(document.getElementById('copilot-drawer'), 'Pulse Copilot', el => !el.classList.contains('translate-x-full'));
+
+        enhance(document);
+        // Conteúdo gerado dinamicamente (tabelas, kanban, cards): reaplica, agrupando as mudanças
+        let queued = false;
+        new MutationObserver(() => {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(() => { queued = false; enhance(document); });
+        }).observe(document.querySelector('main'), { childList: true, subtree: true });
+      });
+    })();
   </script>
 </body>
 </html>
