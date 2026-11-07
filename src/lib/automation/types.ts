@@ -96,6 +96,13 @@ export interface NewScheduledStep {
   resumeAt: string;
 }
 
+export interface StepIdempotencyClaim {
+  ruleId: string;
+  eventId: string;
+  stepKey: string;
+  actionType: string;
+}
+
 /**
  * Porta de persistência do motor. A implementação real fala com o Supabase
  * (`supabase-store.ts`); os testes usam uma em memória.
@@ -108,6 +115,9 @@ export interface AutomationStore {
   /** Devolve 'duplicate' se já existir tarefa aberta com o mesmo dedupeKey. */
   createTask(task: NewTask): Promise<'created' | 'duplicate'>;
   addNote(note: NewNote): Promise<void>;
+  /** Idempotência de passos: reserva a chave antes do efeito; devolve 'duplicate' se já existir. */
+  claimStepIdempotency(claim: StepIdempotencyClaim): Promise<'claimed' | 'duplicate'>;
+  completeStepIdempotency(ruleId: string, eventId: string, stepKey: string): Promise<void>;
   /** Cria (ou atualiza, se o par regra+evento já existe) o registro da execução. */
   recordRun(run: { ruleId: string; eventId: string; status: RunStatus; actions: ActionResult[] }): Promise<void>;
   getRunActions(ruleId: string, eventId: string): Promise<ActionResult[]>;

@@ -165,6 +165,7 @@ CREATE POLICY "Meetings access policy" ON public.meetings
 CREATE POLICY "Contacts access policy" ON public.contacts
   FOR ALL TO authenticated USING (true);
 
+-- Políticas para interactions:
 CREATE POLICY "Interactions access policy" ON public.interactions
   FOR ALL TO authenticated USING (true);
 
@@ -219,3 +220,18 @@ CREATE TABLE IF NOT EXISTS public.health_config (
   )
 );
 
+-- 10. TABELA: automation_step_idempotency (Fase D3)
+CREATE TABLE IF NOT EXISTS public.automation_step_idempotency (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rule_id UUID NOT NULL,
+  event_id UUID NOT NULL,
+  step_key TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  action_type TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('started', 'completed', 'failed')) DEFAULT 'started',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  UNIQUE (rule_id, event_id, step_key)
+);
+CREATE INDEX IF NOT EXISTS idx_step_idempotency_created ON public.automation_step_idempotency(created_at);
+CREATE INDEX IF NOT EXISTS idx_step_idempotency_lookup ON public.automation_step_idempotency(rule_id, event_id, step_key);

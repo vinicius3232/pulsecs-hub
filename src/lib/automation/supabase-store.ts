@@ -69,6 +69,30 @@ export function createSupabaseStore(admin: SupabaseClient): AutomationStore {
       if (error) throw new Error(`note: ${error.message}`);
     },
 
+    async claimStepIdempotency(claim) {
+      const idempotencyKey = `${claim.ruleId}:${claim.eventId}:${claim.stepKey}`;
+      const { error } = await admin.from('automation_step_idempotency').insert({
+        rule_id: claim.ruleId,
+        event_id: claim.eventId,
+        step_key: claim.stepKey,
+        idempotency_key: idempotencyKey,
+        action_type: claim.actionType,
+        status: 'started'
+      });
+      if (!error) return 'claimed';
+      if (error.code === PG_UNIQUE_VIOLATION) return 'duplicate';
+      throw new Error(`step_idempotency: ${error.message}`);
+    },
+
+    async completeStepIdempotency(ruleId, eventId, stepKey) {
+      const idempotencyKey = `${ruleId}:${eventId}:${stepKey}`;
+      const { error } = await admin
+        .from('automation_step_idempotency')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('idempotency_key', idempotencyKey);
+      if (error) throw new Error(`complete_step_idempotency: ${error.message}`);
+    },
+
     async recordRun(run: { ruleId: string; eventId: string; status: RunStatus; actions: ActionResult[] }) {
       // Upsert por (regra, evento): a retomada de uma espera atualiza o mesmo registro.
       const { error } = await admin
