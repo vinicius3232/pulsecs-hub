@@ -58,3 +58,10 @@ test('mapRule higieniza o que vem do banco', () => {
 test('rótulos de status de execução cobrem todos os estados do banco', () => {
   for (const s of ['success', 'partial', 'failed', 'waiting']) assert.ok(A.RUN_STATUS[s].label);
 });
+
+test('saúde do sistema: formatDelaySec formata segundos de atraso de forma amigável', () => {
+  assert.equal(A.formatDelaySec(0), 'nenhum evento em fila');
+  assert.equal(A.formatDelaySec(45), '45s');
+  assert.equal(A.formatDelaySec(125), '2 min');
+  assert.equal(A.formatDelaySec(3665), '1 h 1 min');
+});

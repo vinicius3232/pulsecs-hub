@@ -51,6 +51,8 @@ before(async () => {
   await db.exec(`grant all on all tables in schema public to authenticated, service_role; grant all on public.health_config, public.company_external_mappings, public.unmatched_metrics to anon;`);
   await db.exec(sql('migrations/0008_health_config_wiring_and_unmatched_queue.sql'));
   await db.exec(sql('migrations/0008_health_config_wiring_and_unmatched_queue.sql')); // idempotente
+  await db.exec(sql('migrations/0010_system_health.sql'));
+  await db.exec(sql('migrations/0010_system_health.sql')); // idempotente
 
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`
@@ -314,4 +316,19 @@ test('calibração: o recálculo usa a calibração ativa (e o histórico guarda
   assert.equal(after.health_status, 'red');
   assert.ok((await svc(`select count(*)::int n from health_config`)).rows[0].n >= 3, 'histórico preservado');
   assert.equal((await svc(`select count(*)::int n from health_config where is_active`)).rows[0].n, 1);
+});
+
+
+test('saúde do sistema: apenas o Head pode consultar fn_system_health; demais papéis são negados', async () => {
+  denied(await as('anon', 'select public.fn_system_health()'));
+  for (const who of ['viewer', 'csmA', 'is', 'inactive', 'outsider']) {
+    denied(await as(who, 'select public.fn_system_health()'));
+  }
+  const res = await as('head', 'select public.fn_system_health() as data');
+  ok(res);
+  const data = res.rows[0].data;
+  assert.equal(typeof data.pending_events, 'number');
+  assert.equal(typeof data.dead_events, 'number');
+  assert.equal(typeof data.oldest_pending_age_seconds, 'number');
+  assert.ok(Array.isArray(data.recent_failed_runs));
 });

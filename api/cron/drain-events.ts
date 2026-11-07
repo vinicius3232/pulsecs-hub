@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { bearerToken, safeEqual } from '../_lib/security.js';
+import { logStructured } from '../_lib/logger.js';
 import { drainEvents, drainScheduled } from '../../src/lib/automation/drain.js';
 import { createSupabaseStore } from '../../src/lib/automation/supabase-store.js';
+import { checkQueueHealthAlert } from '../../src/lib/automation/health-alert.js';
 
 /**
  * Cron diário: emite eventos guiados pelo relógio (renovação próxima, RH sem login),
@@ -18,6 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!secret) return res.status(503).json({ error: 'Cron not configured' });
   const provided = bearerToken(req);
   if (!provided || !safeEqual(provided, secret)) {
+    logStructured({ level: 'warn', route: 'api/cron/drain-events', message: 'Tentativa de acesso não autorizada ao cron' });
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -65,9 +68,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       scheduled.failed += s.failed;
       if (s.scanned < 20) break;
     }
-    return res.status(200).json({ recomputed: recomputed ?? 0, emitted: emitted ?? 0, events, scheduled });
+
+    // Alerta de saúde da fila: se passar do limite, abre tarefa automática para o Head
+    const { data: healthStats } = await admin.rpc('fn_system_health');
+    let alertRaised = false;
+    if (healthStats && typeof healthStats === 'object') {
+      const alert = checkQueueHealthAlert({
+        pendingEvents: Number(healthStats.pending_events || 0),
+        oldestAgeSeconds: Number(healthStats.oldest_pending_age_seconds || 0),
+        deadEvents: Number(healthStats.dead_events || 0)
+      });
+      if (alert.alert && alert.taskTitle) {
+        alertRaised = true;
+        try {
+          await admin.from('csm_tasks').insert({
+            title: alert.taskTitle,
+            body: alert.reasons.join('\n'),
+            severity: alert.severity || 'warn',
+            dedupe_key: alert.dedupeKey
+          });
+        } catch {
+          // best effort: falha ao gravar tarefa de alerta não derruba o cron
+        }
+      }
+    }
+
+    logStructured({
+      level: 'info',
+      route: 'api/cron/drain-events',
+      message: 'Execução do cron diário concluída com sucesso',
+      meta: { recomputed: recomputed ?? 0, emitted: emitted ?? 0, events, scheduled, alertRaised }
+    });
+
+    return res.status(200).json({ recomputed: recomputed ?? 0, emitted: emitted ?? 0, events, scheduled, alertRaised });
   } catch (err) {
-    console.error('drain-events error', (err as Error)?.message);
+    logStructured({
+      level: 'error',
+      route: 'api/cron/drain-events',
+      message: (err as Error)?.message || 'Falha ao drenar eventos'
+    });
     return res.status(500).json({ error: 'Drain failed' });
   }
 }
