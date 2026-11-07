@@ -168,6 +168,23 @@
 
     const foot = el('div', 'flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800');
     foot.appendChild(el('span', 'text-xs text-slate-500 dark:text-slate-400', rule.runCount + ' execuções · última: ' + when(rule.lastRunAt)));
+    if (isHead) {
+      const actionsBox = el('div', 'flex items-center gap-1.5 text-xs');
+      const btnEdit = el('button', 'px-2 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 font-medium', 'Editar');
+      btnEdit.type = 'button';
+      btnEdit.onclick = () => { if (root.PulseRulesEditor) root.PulseRulesEditor.open(rule); };
+
+      const btnClone = el('button', 'px-2 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 font-medium', 'Clonar');
+      btnClone.type = 'button';
+      btnClone.onclick = () => { if (root.PulseRulesEditor) root.PulseRulesEditor.clone(rule); };
+
+      const btnDel = el('button', 'px-2 py-1 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-medium', 'Excluir');
+      btnDel.type = 'button';
+      btnDel.onclick = () => { if (root.PulseRulesEditor) root.PulseRulesEditor.delete(rule); };
+
+      actionsBox.append(btnEdit, btnClone, btnDel);
+      foot.appendChild(actionsBox);
+    }
     if (rule.trigger === 'manual.run' && rule.active) {
       const box = el('div', 'flex items-center gap-2');
       const sel = el('select', 'px-2 py-1 rounded-lg text-xs bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200');
@@ -200,6 +217,15 @@
       host.appendChild(p); return;
     }
     const isHead = root.PulseAuth.role() === 'head';
+    if (isHead) {
+      const topBar = el('div', 'flex items-center justify-between mb-4');
+      topBar.appendChild(el('span', 'text-xs text-slate-500 dark:text-slate-400', state.rules.length + ' regras configuradas'));
+      const newBtn = el('button', 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm', '+ Nova regra');
+      newBtn.type = 'button';
+      newBtn.onclick = () => { if (root.PulseRulesEditor) root.PulseRulesEditor.open(); };
+      topBar.appendChild(newBtn);
+      host.appendChild(topBar);
+    }
     const list = el('div', 'grid grid-cols-1 xl:grid-cols-2 gap-4');
     if (!state.rules.length) list.appendChild(el('p', 'text-sm text-slate-500 dark:text-slate-400', 'Nenhuma regra cadastrada.'));
     for (const r of state.rules) list.appendChild(ruleCard(r, isHead));
