@@ -344,44 +344,9 @@
               </div>
               <span id="badge-onboarding-count" aria-label="3 contas em processo de implantação e treinamento" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">3</span>
             </button>
-            <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <i data-lucide="file-text" class="w-4 h-4"></i>
-              <span>Relatórios Mensais & QBR</span>
-            </button>
-            <button onclick="switchTab('renewal')" id="nav-renewal" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <div class="flex items-center gap-3">
-                <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>
-                <span>Pipeline de Renovação</span>
-              </div>
-            </button>
             <button onclick="switchTab('automations')" id="nav-automations" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <i data-lucide="zap" class="w-4 h-4"></i>
               <span>Automações</span>
-            </button>
-          </nav>
-        </div>
-
-        <!-- SEÇÃO 2: ENGAJAMENTO & EQUIPE -->
-        <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Comunicação & Time</span>
-          <nav class="mt-2 space-y-1">
-            <button onclick="switchTab('campaigns')" id="nav-campaigns" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <div class="flex items-center gap-3">
-                <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
-                <span>Kits RH & Campanhas IA</span>
-              </div>
-            </button>
-            <button onclick="switchTab('communications')" id="nav-communications" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <div class="flex items-center gap-3">
-                <i data-lucide="send" class="w-4 h-4 text-emerald-400"></i>
-                <span>Central Omnichannel & Régua</span>
-              </div>
-            </button>
-            <button onclick="switchTab('team')" id="nav-team" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <div class="flex items-center gap-3">
-                <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
-                <span>Equipe CSM & Carteira</span>
-              </div>
             </button>
           </nav>
         </div>
@@ -390,12 +355,6 @@
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Organização</span>
           <nav class="mt-2 space-y-1">
-            <button onclick="switchTab('partners')" id="nav-partners" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
-              <div class="flex items-center gap-3">
-                <i data-lucide="store" class="w-4 h-4 text-emerald-400"></i>
-                <span>Rede de Parceiros & LGPD</span>
-              </div>
-            </button>
             <button onclick="switchTab('reminders')" id="nav-reminders" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all bg-indigo-50 dark:bg-brand-600/15 text-brand-600 dark:text-brand-300 border border-indigo-200 dark:border-brand-500/30">
               <div class="flex items-center gap-3">
                 <i data-lucide="clock" class="w-4 h-4 text-brand-500"></i>
@@ -804,26 +763,12 @@
         </div>
 
         <!-- KPI Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">MRR Sob Gestão</div>
-            <div id="kpi-total-mrr" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">R$ 94.200</div>
-            <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
-              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> <span data-demo="mrr-delta">+4.2% este mês</span>
-            </div>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
             <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Health Score Médio</div>
             <div id="kpi-avg-hs" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">72 / 100</div>
             <div id="kpi-hs-status-note" class="text-[11px] text-amber-500 flex items-center gap-1 mt-1 font-medium">
               <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 2 contas em alerta vermelho
-            </div>
-          </div>
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Net Retention Rate (NRR)</div>
-            <div class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1" data-demo="nrr">112%</div>
-            <div class="text-[11px] text-emerald-500 flex items-center gap-1 mt-1 font-medium">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> <span data-demo="nrr-note">Meta anual batida</span>
             </div>
           </div>
           <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-700 transition-all">
@@ -838,7 +783,7 @@
         <!-- GRÁFICOS ANALÍTICOS (CHART.JS) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <!-- Gráfico 1: Evolução Histórica de Health Score -->
-          <div class="lg:col-span-8 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
+          <div class="lg:col-span-12 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
@@ -856,19 +801,6 @@
             </div>
           </div>
 
-          <!-- Gráfico 2: Composição de MRR por Tier -->
-          <div class="lg:col-span-4 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 flex flex-col justify-between">
-            <div>
-              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
-                <span>Composição de MRR por Tier</span>
-              </h3>
-              <p class="text-xs text-slate-400">Distribuição percentual da receita recorrente</p>
-            </div>
-            <div class="h-56 relative flex items-center justify-center">
-              <canvas id="chart-mrr-tier"></canvas>
-            </div>
-          </div>
         </div>
 
         <!-- Filtros & Tabela Interativa de Clientes -->
@@ -888,12 +820,6 @@
               <input type="text" id="wallet-search" aria-label="Buscar cliente por nome, segmento ou contato" oninput="renderClientTable()" placeholder="Buscar cliente por nome, segmento ou contato..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <select id="wallet-filter-tier" aria-label="Filtrar por plano" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
-                <option value="all">Todos os Tiers</option>
-                <option value="Enterprise">Enterprise</option>
-                <option value="Mid-Market">Mid-Market</option>
-                <option value="SMB">SMB / Pro</option>
-              </select>
               <select id="wallet-filter-status" aria-label="Filtrar por saúde" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os Status</option>
                 <option value="green">Verde (Saudável)</option>
@@ -908,14 +834,10 @@
                 <option value="Treinamento">Treinamento</option>
                 <option value="Go-Live">Go-Live</option>
               </select>
-              <select id="wallet-filter-owner" aria-label="Filtrar por responsável" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
-                <option value="all">Todos os CSMs</option>
-              </select>
               <select id="wallet-sort" aria-label="Ordenar" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="none">Ordem padrão</option>
                 <option value="hs_asc">Menor score primeiro</option>
                 <option value="hs_desc">Maior score primeiro</option>
-                <option value="mrr_desc">Maior MRR primeiro</option>
                 <option value="name_asc">Nome (A–Z)</option>
               </select>
             </div>
@@ -1008,9 +930,9 @@
               <span class="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
                 <i data-lucide="shield-alert" class="w-5 h-5"></i>
               </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Triagem de HS Baixo & Contenção de Churn</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Clientes em risco</h2>
             </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Clientes com telemetria estagnada, queda brusca de engajamento ou sem login recente.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Do menor score para o maior. Abra o cliente para ver o motivo e agir.</p>
           </div>
           <button onclick="runAutoCopilotRiskAudit()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-rose-600/20 transition-all">
             <i data-lucide="scan-line" class="w-4 h-4"></i> Diagnóstico Geral com IA
@@ -1018,7 +940,7 @@
         </div>
 
         <!-- Cartões de Contas em Risco Iminente -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="churn-risk-cards">
+        <div class="space-y-2" id="churn-risk-cards">
           <!-- Renderizado dinamicamente com Playbook de Resgate -->
         </div>
       </section>
@@ -1073,747 +995,6 @@
               <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold" id="count-kanban-4">8</span>
             </div>
             <div class="space-y-3" id="kanban-col-4"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA 5: RELATÓRIOS MENSAIS & QBR                               -->
-      <!-- ============================================================== -->
-      <section id="tab-reports" class="tab-content hidden space-y-6 animate-tab">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Relatórios Executivos & QBR</h2>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Dados consolidados para demonstração visual">Exemplo</span>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Consolidação automática de resultados para apresentação à diretoria e reuniões executivas.</p>
-          </div>
-          <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-2 active:scale-95 transition-all">
-            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / Salvar PDF
-          </button>
-        </div>
-
-        <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-          <div class="border-b border-slate-200 dark:border-slate-800 pb-4 flex justify-between items-center">
-            <div>
-              <span class="text-xs font-bold text-brand-500 uppercase tracking-wider">PulseCS Intelligence Report</span>
-              <h2 class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">Balanço Mensal de Retenção & Carteira</h2>
-            </div>
-            <div class="text-right text-xs text-slate-400">
-              <span>Período: <strong>Novembro / 2026</strong></span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800">
-              <span class="text-slate-400 font-medium">Contas Salvas de Churn</span>
-              <div class="text-2xl font-extrabold text-emerald-400 mt-1">3 Clientes</div>
-              <p class="text-[11px] text-slate-500 mt-1">R$ 18.500 de receita protegida neste ciclo.</p>
-            </div>
-            <div class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800">
-              <span class="text-slate-400 font-medium">Calls Operacionais Realizadas</span>
-              <div class="text-2xl font-extrabold text-indigo-400 mt-1">28 Reuniões</div>
-              <p class="text-[11px] text-slate-500 mt-1">94% com briefing prévio e atas registradas.</p>
-            </div>
-            <div class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800">
-              <span class="text-slate-400 font-medium">NPS Médio da Carteira</span>
-              <div class="text-2xl font-extrabold text-emerald-400 mt-1">+76</div>
-              <p class="text-[11px] text-slate-500 mt-1">Zona de Excelência (Amostra de 11 clientes).</p>
-            </div>
-          </div>
-
-          <!-- Destaques Narrativos com IA -->
-          <div class="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs space-y-3">
-            <div class="flex items-center gap-2 font-bold text-indigo-300">
-              <i data-lucide="bot" class="w-4 h-4 text-indigo-400"></i>
-              <span>Síntese Executiva Gerada pelo Copilot</span>
-            </div>
-            <p class="text-slate-300 leading-relaxed">
-              A carteira mantém forte expansão em contas chave (NexStore e Rede Mais Fidelidade com incremento de uso de +14%). O ponto de atenção imediato é o <strong>Clube Prime Associados</strong>, com bloqueio na etapa de setup de usuários. Uma intervenção direta com suporte guiado está programada para hoje às 15:30. A taxa geral de adoção de novos recursos atingiu 78%, representando alta retenção projetada para os próximos 90 dias.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA: CENTRAL OMNICHANNEL & RÉGUA DE RETENÇÃO (WHATSAPP/EMAIL)   -->
-      <!-- ============================================================== -->
-      <section id="tab-communications" class="tab-content hidden space-y-6 animate-tab">
-        <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <i data-lucide="send" class="w-5 h-5"></i>
-              </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central Omnichannel & Régua de CS</h2>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Disparos inteligentes para WhatsApp Web e Gmail com mensagens personalizadas geradas por IA para contenção de churn e ativação.
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="autoFillUrgentCadence()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all">
-              <i data-lucide="zap" class="w-4 h-4"></i> Carregar Mais Urgente
-            </button>
-          </div>
-        </div>
-
-        <!-- Indicadores da Régua de Comunicação -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Inativos > 7 Dias</span>
-              <i data-lucide="clock-alert" class="w-4 h-4 text-rose-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-rose-500 mt-1" id="comm-stat-inactives">2 Contas</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Risco de abandono silencioso</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Setup Travado</span>
-              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-amber-400 mt-1" id="comm-stat-stuck">2 Contas</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Pendente upload ou config</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Elegíveis para QBR / Case</span>
-              <i data-lucide="award" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1" id="comm-stat-champions">7 Contas</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">HS > 75 em fase Go-Live</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Taxa de Resposta</span>
-              <i data-lucide="message-square-text" class="w-4 h-4 text-indigo-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-indigo-400 mt-1" data-demo="resp-rate">88.5%</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">WhatsApp: 92% • E-mail: 64%</p>
-          </div>
-        </div>
-
-        <!-- Área Principal: Estúdio de Disparo & Fila Prioritária -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- Estúdio de Redação & Disparo (2 colunas) -->
-          <div class="lg:col-span-2 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-                <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
-                <span>Estúdio de Contato Inteligente</span>
-              </div>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 font-mono">Pronto para Envio</span>
-            </div>
-
-            <!-- Seletores: Cliente & Modelo de Gatilho -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="comm-client-select" class="block text-xs font-semibold text-slate-400 mb-1.5">Destinatário (Cliente da Carteira):</label>
-                <select id="comm-client-select" aria-label="Destinatário: cliente da carteira" onchange="onCadenceClientChange()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <!-- Preenchido via JS -->
-                </select>
-              </div>
-
-              <div>
-                <label for="comm-trigger-type" class="block text-xs font-semibold text-slate-400 mb-1.5">Objetivo do Contato (Gatilho de CS):</label>
-                <select id="comm-trigger-type" aria-label="Objetivo do contato e gatilho de CS" onchange="generateCadenceDraft()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <option value="churn_rescue">Resgate de Conta Inativa / Risco de Churn</option>
-                  <option value="onboarding_unlock">Apoio para Destravar Onboarding & Carga</option>
-                  <option value="qbr_invite">Convite para Reunião Estratégica (QBR)</option>
-                  <option value="training_confirm">Lembrete de Treinamento com Link Meet</option>
-                  <option value="nps_champion">Reconhecimento de Sucesso & Pedido de Depoimento</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Badge de Contexto do Cliente Selecionado -->
-            <div id="comm-client-context-card" class="p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 text-xs flex flex-wrap items-center justify-between gap-3">
-              <!-- Renderizado via JS -->
-            </div>
-
-            <!-- Editor de Mensagem com Prompt de IA -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <label for="comm-message-text" class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-                  <span>Mensagem Personalizada:</span>
-                </label>
-                <div class="flex items-center gap-1.5">
-                  <button onclick="refineMessageWithAI('empatico')" aria-label="Tornar mensagem mais empática" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
-                    Mais Empático
-                  </button>
-                  <button onclick="refineMessageWithAI('direto')" aria-label="Tornar mensagem mais direta" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
-                    Mais Direto
-                  </button>
-                  <button onclick="generateCadenceDraft()" aria-label="Recriar mensagem com IA" class="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 text-[11px] font-semibold transition-all flex items-center gap-1">
-                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Recriar
-                  </button>
-                </div>
-              </div>
-
-              <textarea id="comm-message-text" aria-label="Texto da mensagem personalizada de contato" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"></textarea>
-            </div>
-
-            <!-- Botões de Disparo Imediato -->
-            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <div class="flex items-center gap-2">
-                <button onclick="copyMessageToClipboard()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all">
-                  <i data-lucide="copy" class="w-4 h-4"></i> Copiar Texto
-                </button>
-                <button onclick="recordContactHistory()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all">
-                  <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Marcar como Enviado
-                </button>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <!-- Botão Gmail -->
-                <button onclick="sendViaGmail()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all">
-                  <i data-lucide="mail" class="w-4 h-4"></i> Abrir no Gmail
-                </button>
-
-                <!-- Botão WhatsApp Web -->
-                <button onclick="sendViaWhatsApp()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/30 active:scale-95 transition-all">
-                  <i data-lucide="message-circle" class="w-4 h-4"></i> Abrir WhatsApp Web
-                </button>
-
-                <!-- Botão Funcionário Digital Salez -->
-                <button onclick="sendViaSalezAgent()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all" title="Dispara via Funcionário Digital oficial da Salez (salez.com.br)">
-                  <i data-lucide="bot" class="w-4 h-4"></i> Disparar via Salez AI
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Fila Prioritária de Contato da Semana (1 coluna lateral) -->
-          <div class="space-y-4">
-            <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span class="font-bold text-xs uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <i data-lucide="list-todo" class="w-3.5 h-3.5 text-indigo-400"></i> Fila de Intervenção
-                </span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-bold">Hoje</span>
-              </div>
-
-              <!-- Lista de Clientes Prioritários -->
-              <div class="space-y-2.5" id="comm-priority-queue">
-                <!-- Preenchido via JS -->
-              </div>
-            </div>
-
-            <!-- Card de Automação & Boas Práticas -->
-            <div class="bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-800/40 p-4 rounded-2xl text-xs space-y-2">
-              <div class="flex items-center gap-2 text-indigo-300 font-bold">
-                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                <span>Diretriz de Contato de CS</span>
-              </div>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
-                Mensagens enviadas com menos de 3 parágrafos e com pergunta direta no final possuem <strong>4.2x mais taxa de resposta</strong> do que comunicações formais em PDF.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA: EQUIPE & GESTÃO DE CARTEIRA CSM ("RH DE CS")              -->
-      <!-- ============================================================== -->
-      <section id="tab-team" class="tab-content hidden space-y-6 animate-tab">
-        <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                <i data-lucide="users" class="w-5 h-5"></i>
-              </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Equipe de CS & Balanceamento de Carteira</h2>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Controle de capacidade de CSMs, equilíbrio de MRR e transferência dinâmica de contas para evitar gargalos operacionais.
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="simulateEquitableBalance()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-purple-600/30 transition-all">
-              <i data-lucide="scale" class="w-4 h-4"></i> Equilibrar Carteiras com IA
-            </button>
-          </div>
-        </div>
-
-        <!-- Indicadores da Equipe -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>CSMs Ativos</span>
-              <i data-lucide="user-check" class="w-4 h-4 text-purple-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1">3 CSMs</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">100% alocados na operação</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>MRR Médio por CSM</span>
-              <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1">R$ 31.4k</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Total: R$ 94.200 / mês</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Média de Contas</span>
-              <i data-lucide="briefcase" class="w-4 h-4 text-indigo-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-indigo-400 mt-1">3.7 Contas</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Capacidade ideal: 4 a 6 contas</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Net Retention Rate (NRR)</span>
-              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="nrr">108.4%</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Expansão líquida positiva</p>
-          </div>
-        </div>
-
-        <!-- Cards dos 3 CSMs -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="team-csm-cards">
-          <!-- Renderizado via JS -->
-        </div>
-
-        <!-- Tabela Rápida de Atribuição & Remanejamento de Contas -->
-        <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div>
-              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="arrows-left-right" class="w-4 h-4 text-purple-400"></i>
-                <span>Matriz de Atribuição de Contas por CSM</span>
-              </h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Altere o CSM responsável diretamente para equilibrar a carga de trabalho.</p>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-100/50 dark:bg-darkbg-800/50 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th class="py-3 px-4">Empresa / Conta</th>
-                  <th class="py-3 px-4">Tier & MRR</th>
-                  <th class="py-3 px-4">Health Score</th>
-                  <th class="py-3 px-4">Fase</th>
-                  <th class="py-3 px-4">CSM Responsável</th>
-                  <th class="py-3 px-4 text-right">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="team-assignment-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                <!-- Preenchido via JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA: PIPELINE DE RENOVAÇÃO & RETENÇÃO LÍQUIDA (FASE 4)         -->
-      <!-- ============================================================== -->
-      <section id="tab-renewal" class="tab-content hidden space-y-6 animate-tab">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-              </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pipeline de Renovação & NRR</h2>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Controle antecipado de vencimentos contratuais (90, 60 e 30 dias) com prova de valor e defesa de ROI para o RH.
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="runAutoRenewalForecastAudit()" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-amber-600/30 transition-all">
-              <i data-lucide="sparkles" class="w-4 h-4"></i> Auditoria de Renovação com IA
-            </button>
-          </div>
-        </div>
-
-        <!-- KPIs de Renovação -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>MRR em Janela de Renovação</span>
-              <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-amber-400 mt-1" id="renewal-stat-mrr" data-demo="renewal-mrr">R$ 34.7k</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">3 contratos nos próximos 90 dias</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Net Retention Rate (NRR)</span>
-              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="nrr">108.4%</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Expansão supera cancelamentos</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Taxa Média de Adoção</span>
-              <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-indigo-400 mt-1" data-demo="adoption">81.2%</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Colaboradores ativos na carteira</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 text-xs">
-              <span>Economia Gerada Total</span>
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400 mt-1" data-demo="savings">R$ 384.2k</div>
-            <p class="text-[11px] text-slate-500 mt-0.5">Alavanca de ROI na renovação</p>
-          </div>
-        </div>
-
-        <!-- Kanban de Estágios de Renovação (90 / 60 / 30 Dias) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Coluna 1: 90 Dias -->
-          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <span class="font-bold text-xs uppercase tracking-wider text-blue-400 block">Estágio 90 Dias</span>
-                <span class="text-[11px] text-slate-400">Auditoria de Valor & Prova de ROI</span>
-              </div>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold" id="renewal-count-90">1</span>
-            </div>
-            <div class="space-y-3" id="renewal-cards-90">
-              <!-- Preenchido via JS -->
-            </div>
-          </div>
-
-          <!-- Coluna 2: 60 Dias -->
-          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <span class="font-bold text-xs uppercase tracking-wider text-amber-400 block">Estágio 60 Dias</span>
-                <span class="text-[11px] text-slate-400">Apresentação Executiva de QBR</span>
-              </div>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold" id="renewal-count-60">1</span>
-            </div>
-            <div class="space-y-3" id="renewal-cards-60">
-              <!-- Preenchido via JS -->
-            </div>
-          </div>
-
-          <!-- Coluna 3: 30 Dias -->
-          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <span class="font-bold text-xs uppercase tracking-wider text-emerald-400 block">Estágio 30 Dias</span>
-                <span class="text-[11px] text-slate-400">Proposta de Renovação & Upsell</span>
-              </div>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold" id="renewal-count-30">1</span>
-            </div>
-            <div class="space-y-3" id="renewal-cards-30">
-              <!-- Preenchido via JS -->
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA: KITS DE COMUNICAÇÃO RH & CAMPANHAS SAZONAIS (FASE 5)      -->
-      <!-- ============================================================== -->
-      <section id="tab-campaigns" class="tab-content hidden space-y-6 animate-tab">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <i data-lucide="megaphone" class="w-5 h-5"></i>
-              </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kits para o RH & Campanhas Sazonais</h2>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20" title="Modelos gerados com IA para demonstração">Exemplo</span>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Geração com IA de materiais de comunicação interna para o RH engajar os colaboradores e elevar a taxa de uso dos benefícios.
-            </p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Coluna 1 & 2: Estúdio de Criação de Kit RH -->
-          <div class="lg:col-span-2 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
-                <span>Gerador de Kit de Engajamento Interno</span>
-              </div>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono">IA Copilot</span>
-            </div>
-
-            <!-- Seletores -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label for="campaign-client-select" class="block font-semibold text-slate-400 mb-1.5">Empresa Cliente Alvo:</label>
-                <select id="campaign-client-select" aria-label="Empresa cliente alvo da campanha" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <!-- Preenchido via JS -->
-                </select>
-              </div>
-              <div>
-                <label for="campaign-focus-select" class="block font-semibold text-slate-400 mb-1.5">Foco da Campanha:</label>
-                <select id="campaign-focus-select" aria-label="Foco da campanha de benefícios" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <option value="activation">Alavancar Ativação de Novos Colaboradores</option>
-                  <option value="meal">Destaque dos Benefícios de Alimentação & Refeição</option>
-                  <option value="health">Economia em Farmácias & Descontos em Saúde</option>
-                  <option value="mobility">Benefício de Mobilidade Urbana & Combustível</option>
-                  <option value="education">Bolsas de Estudos & Cursos Profissionalizantes</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Abas dos 3 Formatos do Kit -->
-            <div class="border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 pt-1 text-xs">
-              <button onclick="switchKitTab('email')" id="btn-kit-email" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white flex items-center gap-1.5 transition-all">
-                <i data-lucide="mail" class="w-3.5 h-3.5"></i> E-mail para RH Disparar
-              </button>
-              <button onclick="switchKitTab('whatsapp')" id="btn-kit-whatsapp" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-400"></i> WhatsApp dos Colaboradores
-              </button>
-              <button onclick="switchKitTab('mural')" id="btn-kit-mural" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
-                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Cartaz Mural / Intranet
-              </button>
-            </div>
-
-            <!-- Conteúdo Gerado do Kit -->
-            <div class="space-y-3">
-              <div id="kit-content-email" class="space-y-2">
-                <label for="kit-email-subject" class="text-[11px] font-semibold text-slate-400">Assunto do E-mail:</label>
-                <input type="text" id="kit-email-subject" aria-label="Assunto do e-mail do kit de engajamento" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 font-semibold" readonly>
-                <label for="kit-email-body" class="text-[11px] font-semibold text-slate-400 block pt-1">Corpo da Mensagem:</label>
-                <textarea id="kit-email-body" aria-label="Corpo do e-mail corporativo para colaboradores" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
-              </div>
-
-              <div id="kit-content-whatsapp" class="space-y-2 hidden">
-                <label for="kit-whatsapp-body" class="text-[11px] font-semibold text-slate-400">Texto Otimizado para WhatsApp:</label>
-                <textarea id="kit-whatsapp-body" aria-label="Texto de WhatsApp para colaboradores" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
-              </div>
-
-              <div id="kit-content-mural" class="space-y-2 hidden">
-                <label for="kit-mural-body" class="text-[11px] font-semibold text-slate-400">Comunicado para Intranet / Mural:</label>
-                <textarea id="kit-mural-body" aria-label="Texto para cartaz mural ou comunicado intranet" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-              <button onclick="copyCurrentKitContent()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all">
-                <i data-lucide="copy" class="w-4 h-4"></i> Copiar Texto Ativo
-              </button>
-              <button onclick="sendKitViaEmailToRH()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 active:scale-95 transition-all">
-                <i data-lucide="send" class="w-4 h-4"></i> Enviar Kit Completo para o RH
-              </button>
-            </div>
-          </div>
-
-          <!-- Coluna 3: Calendário de Campanhas Sazonais -->
-          <div class="space-y-4">
-            <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-              <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span class="font-bold text-xs uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i> Campanhas Sazonais
-                </span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold">2026/27</span>
-              </div>
-
-              <!-- Lista de Campanhas Sazonais -->
-              <div class="space-y-3 text-xs">
-                <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <strong class="text-blue-300 font-bold">Novembro Azul — Saúde & Check-up</strong>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-200 font-bold">Ativa</span>
-                  </div>
-                  <p class="text-[11px] text-slate-300">Incentivo a exames preventivos e uso de farmácias com descontos da rede.</p>
-                </div>
-
-                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <strong class="text-slate-200 font-bold">Black Friday dos Benefícios</strong>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-darkbg-700 text-slate-400">28/Nov</span>
-                  </div>
-                  <p class="text-[11px] text-slate-400">Campanha de cupons em dobro para colaboradores utilizarem nas compras de fim de ano.</p>
-                </div>
-
-                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <strong class="text-slate-200 font-bold">Janeiro Branco — Saúde Mental</strong>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-200 dark:bg-darkbg-700 text-slate-400">05/Jan</span>
-                  </div>
-                  <p class="text-[11px] text-slate-400">Ativação de telemedicina e apoio psicológico gratuito para colaboradores.</p>
-                </div>
-              </div>
-
-              <button onclick="showToast('Disparo programado para todas as empresas ativas na carteira.', 'success')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-300 font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                <i data-lucide="send" class="w-3.5 h-3.5 text-indigo-400"></i> Agendar Campanha Geral
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================================== -->
-      <!-- ABA: REDE DE PARCEIROS, CATEGORIAS & LGPD (FASE 6)             -->
-      <!-- ============================================================== -->
-      <section id="tab-partners" class="tab-content hidden space-y-6 animate-tab">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <i data-lucide="store" class="w-5 h-5"></i>
-              </span>
-              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rede de Parceiros & Gestão LGPD</h2>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Mix de benefícios e dados de exemplo para demonstração">Exemplo</span>
-            </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Mapeamento do mix de benefícios, categorias mais utilizadas, demandas regionais e auditoria de conformidade.
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="exportLgpdAuditReport()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/30 transition-all">
-              <i data-lucide="shield-check" class="w-4 h-4"></i> Exportar Auditoria LGPD
-            </button>
-          </div>
-        </div>
-
-        <!-- 5 Categorias Principais de Benefício -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-            <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 w-fit">
-              <i data-lucide="utensils" class="w-5 h-5"></i>
-            </div>
-            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Refeição & Alimentação</strong>
-            <span class="text-emerald-500 dark:text-emerald-400 font-bold text-xs">42% do volume</span>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 39.5k/mês transacionados</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-            <div class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 w-fit">
-              <i data-lucide="heart-pulse" class="w-5 h-5"></i>
-            </div>
-            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Saúde & Farmácia</strong>
-            <span class="text-emerald-500 dark:text-emerald-400 font-bold text-xs">28% do volume</span>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 26.3k/mês em descontos</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-            <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 w-fit">
-              <i data-lucide="car" class="w-5 h-5"></i>
-            </div>
-            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Mobilidade & Combustível</strong>
-            <span class="text-indigo-500 dark:text-indigo-400 font-bold text-xs">15% do volume</span>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 14.1k/mês em rotas</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-            <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 w-fit">
-              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
-            </div>
-            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Educação & Cursos</strong>
-            <span class="text-purple-500 dark:text-purple-400 font-bold text-xs">9% do volume</span>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 8.4k/mês em bolsas</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-            <div class="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 w-fit">
-              <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-            </div>
-            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Clube de Compras</strong>
-            <span class="text-amber-500 dark:text-amber-400 font-bold text-xs">6% do volume</span>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 5.9k/mês em cupons</p>
-          </div>
-        </div>
-
-        <!-- Radar de Demanda Reprimida & Painel LGPD -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Tabela de Demanda Reprimida -->
-          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="map-pin" class="w-4 h-4 text-rose-400"></i>
-                <span>Radar de Demanda Reprimida por Região</span>
-              </h3>
-              <span class="text-xs text-slate-400 font-mono">Solicitações</span>
-            </div>
-
-            <div class="space-y-3 text-xs">
-              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <strong class="text-slate-200">Curitiba / PR — Rede de Academias</strong>
-                  <p class="text-[11px] text-slate-400 mt-0.5">Colaboradores da Apex Logística pediram convênio SmartFit</p>
-                </div>
-                <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 font-bold text-[11px]">48 Votos</span>
-              </div>
-
-              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <strong class="text-slate-200">Belo Horizonte / MG — Farmácias Araújo</strong>
-                  <p class="text-[11px] text-slate-400 mt-0.5">Colaboradores de Rede Mais Fidelidade pediram desconto balcão</p>
-                </div>
-                <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 font-bold text-[11px]">35 Votos</span>
-              </div>
-
-              <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <strong class="text-slate-200">Campinas / SP — Postos Ipiranga / Abastece Aí</strong>
-                  <p class="text-[11px] text-slate-400 mt-0.5">Equipe externa de vendas pediu cashback em combustíveis</p>
-                </div>
-                <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-[11px]">62 Votos</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Painel de Conformidade LGPD -->
-          <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
-                <span>Conformidade & Governança LGPD</span>
-              </h3>
-              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">100% Blindado</span>
-            </div>
-
-            <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-2 text-xs">
-              <strong class="text-emerald-300 block">Arquitetura Privacy-by-Design:</strong>
-              <p class="text-slate-300 leading-relaxed text-[11px]">
-                O PulseCS processa <strong>exclusivamente métricas agregadas por empresa</strong> (vidas elegíveis, vidas ativas e volume de economia). Nenhum CPF, nome completo ou dado sensível individual de colaborador é persistido na nuvem.
-              </p>
-            </div>
-
-            <div class="space-y-2 text-xs text-slate-300">
-              <div class="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <span class="text-slate-400">Tratamento de Dados de Contato B2B:</span>
-                <strong class="text-slate-200">Finalidade Legítima (Gestão de Contrato)</strong>
-              </div>
-              <div class="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <span class="text-slate-400">Política de Retenção de Histórico:</span>
-                <strong class="text-slate-200">12 Meses com Auto-Purge de Snapshots</strong>
-              </div>
-              <div class="flex items-center justify-between py-1">
-                <span class="text-slate-400">Isolamento Multi-Tenant (RLS):</span>
-                <strong class="text-emerald-400">Ativo via PostgreSQL / Supabase</strong>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -2669,16 +1850,6 @@
         setTimeout(updateCharts, 50);
       } else if (tabId === 'calendar') {
         renderCalendar();
-      } else if (tabId === 'communications') {
-        renderOmnichannelTab();
-      } else if (tabId === 'team') {
-        renderTeamTab();
-      } else if (tabId === 'renewal') {
-        renderRenewalTab();
-      } else if (tabId === 'campaigns') {
-        renderCampaignsTab();
-      } else if (tabId === 'partners') {
-        renderPartnersTab();
       }
 
       document.querySelectorAll('.nav-btn').forEach(b => b.removeAttribute('aria-current'));
@@ -2828,11 +1999,9 @@
 
       const filtered = clients.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm) || c.contact.toLowerCase().includes(searchTerm);
-        const matchesTier = f.tier === 'all' || c.tier === f.tier;
         const matchesStatus = f.status === 'all' || c.status === f.status;
         const matchesPhase = f.phase === 'all' || (f.phase === 'onboarding' ? c.phase !== 'Go-Live' : c.phase === f.phase);
-        const matchesOwner = f.owner === 'all' || String(c.csmId) === f.owner;
-        return matchesSearch && matchesTier && matchesStatus && matchesPhase && matchesOwner;
+        return matchesSearch && matchesStatus && matchesPhase;
       });
       const cmp = WALLET_SORTS[f.sort];
       if (cmp) filtered.sort(cmp);
@@ -2918,7 +2087,6 @@
       const avgHS = Math.round(clients.reduce((acc, c) => acc + c.hs, 0) / (clients.length || 1));
       const onboardingCount = clients.filter(c => c.phase !== 'Go-Live').length;
 
-      document.getElementById('kpi-total-mrr').textContent = `R$ ${totalMRR.toLocaleString('pt-BR')}`;
       document.getElementById('kpi-avg-hs').textContent = `${avgHS} / 100`;
       document.getElementById('kpi-onboarding-count').textContent = `${onboardingCount} Contas`;
       
@@ -3067,50 +2235,24 @@
       const container = document.getElementById('churn-risk-cards');
       if (!container) return;
 
-      const riskClients = clients.filter(c => c.status === 'red' || c.status === 'yellow');
+      const riskClients = clients.filter(c => c.status === 'red' || c.status === 'yellow').sort((a, b) => a.hs - b.hs);
+
+      if (!riskClients.length) {
+        container.innerHTML = '<div class="p-6 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400 text-center" role="status">Nenhum cliente em risco agora.</div>';
+        return;
+      }
 
       container.innerHTML = riskClients.map(c => `
-        <div class="p-5 rounded-2xl bg-white dark:bg-darkbg-850 border ${c.status === 'red' ? 'border-rose-500/40' : 'border-amber-500/30'} shadow-sm space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <span class="text-xs font-bold uppercase tracking-wider ${c.status === 'red' ? 'text-rose-400' : 'text-amber-400'}">
-                ${c.status === 'red' ? '🚨 Risco Iminente de Cancelamento' : '⚠️ Alerta de Engajamento'}
-              </span>
-              <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-0.5">${esc(c.name)}</h3>
+        <div class="p-3 sm:p-4 rounded-xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 flex items-center gap-3 sm:gap-4">
+          <span class="shrink-0 w-2.5 h-2.5 rounded-full ${c.status === 'red' ? 'bg-rose-500' : 'bg-amber-500'}" role="img" aria-label="${c.status === 'red' ? 'Crítico' : 'Atenção'}"></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <strong class="text-sm text-slate-900 dark:text-white truncate">${esc(c.name)}</strong>
+              <span class="text-xs font-semibold ${c.status === 'red' ? 'text-rose-700 dark:text-rose-400' : 'text-amber-700 dark:text-amber-400'}">Score ${c.hs}</span>
             </div>
-            <div class="text-right">
-              <span class="text-xs text-slate-400">MRR em risco</span>
-              <div class="text-base font-mono font-bold text-slate-800 dark:text-slate-200">R$ ${c.mrr.toLocaleString('pt-BR')}</div>
-            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-400 truncate">${esc(c.riskReason)} · último login ${esc(c.lastLogin)}</p>
           </div>
-
-          <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
-            <div class="text-slate-400">Motivo Detectado pela Telemetria:</div>
-            <p class="font-semibold text-slate-700 dark:text-slate-200">${esc(c.riskReason)}</p>
-            <div class="text-slate-400 pt-1">Último Login: <strong class="text-slate-300">${esc(c.lastLogin)}</strong></div>
-          </div>
-
-          <!-- Playbook de Resgate do Copilot -->
-          <div class="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs space-y-2">
-            <div class="font-bold text-indigo-300 flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-              <span>Playbook de Resgate Recomendado pelo Copilot:</span>
-            </div>
-            <p class="text-slate-300 leading-relaxed">
-              1. Disparar WhatsApp para <strong>${esc(c.contact)}</strong> oferecendo uma call técnica guiada de 20 minutos.<br>
-              2. Fazer o upload manual da primeira planilha para destravar o valor percebido.<br>
-              3. Estender o período de onboarding sem custo adicional.
-            </p>
-          </div>
-
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-            <button onclick="copyRescueEmail(${c.id})" class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all">
-              <i data-lucide="mail" class="w-3.5 h-3.5"></i> Copiar E-mail de Resgate
-            </button>
-            <button onclick="openClientModal(${c.id})" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-all">
-              Abrir War Room
-            </button>
-          </div>
+          <button onclick="openClientModal(${c.id})" class="shrink-0 px-3 py-2 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700">Abrir</button>
         </div>
       `).join('');
 
@@ -4921,23 +4063,16 @@
       none: null,
       hs_asc: (a, b) => a.hs - b.hs,
       hs_desc: (a, b) => b.hs - a.hs,
-      mrr_desc: (a, b) => b.mrr - a.mrr,
       name_asc: (a, b) => a.name.localeCompare(b.name, 'pt-BR')
     };
-    const WALLET_FILTER_IDS = { search: 'wallet-search', tier: 'wallet-filter-tier', status: 'wallet-filter-status', phase: 'wallet-filter-phase', owner: 'wallet-filter-owner', sort: 'wallet-sort' };
-    const WALLET_DEFAULTS = { search: '', tier: 'all', status: 'all', phase: 'all', owner: 'all', sort: 'none' };
+    const WALLET_FILTER_IDS = { search: 'wallet-search', status: 'wallet-filter-status', phase: 'wallet-filter-phase', sort: 'wallet-sort' };
+    const WALLET_DEFAULTS = { search: '', status: 'all', phase: 'all', sort: 'none' };
     const WALLET_PRESETS = [
       { id: 'all', name: 'Todas', filters: {} },
       { id: 'risk', name: 'Em risco', filters: { status: 'red', sort: 'hs_asc' } },
       { id: 'attention', name: 'Atenção', filters: { status: 'yellow', sort: 'hs_asc' } },
-      { id: 'onboarding', name: 'Em onboarding', filters: { phase: 'onboarding', sort: 'hs_asc' } },
-      { id: 'top', name: 'Maiores contas', filters: { sort: 'mrr_desc' } },
-      { id: 'enterprise-ok', name: 'Enterprise saudáveis', filters: { tier: 'Enterprise', status: 'green', sort: 'mrr_desc' } }
+      { id: 'onboarding', name: 'Em onboarding', filters: { phase: 'onboarding', sort: 'hs_asc' } }
     ];
-    const VIEW_NAME_MAX = 60;
-    const VIEWS_KEY = 'pulsecs_views';
-    let savingWalletView = false;
-
     function readWalletFilters() {
       const f = { ...WALLET_DEFAULTS };
       for (const k of Object.keys(WALLET_FILTER_IDS)) {
@@ -4951,36 +4086,8 @@
       return Object.keys(WALLET_DEFAULTS).every(k => (a[k] ?? WALLET_DEFAULTS[k]) === (b[k] ?? WALLET_DEFAULTS[k]));
     }
 
-    // Sanitiza o que vem do localStorage: só valores conhecidos entram no estado
-    function loadCustomViews() {
-      let raw = [];
-      try { raw = JSON.parse(localStorage.getItem(VIEWS_KEY) || '[]'); } catch (e) { raw = []; }
-      if (!Array.isArray(raw)) return [];
-      const owners = new Set(['all', ...teamCSMs.map(t => String(t.id))]);
-      const allowed = {
-        tier: new Set(['all', 'Enterprise', 'Mid-Market', 'SMB']),
-        status: new Set(['all', 'green', 'yellow', 'red']),
-        phase: new Set(['all', 'onboarding', 'Kickoff', 'Config & Carga', 'Treinamento', 'Go-Live']),
-        owner: owners,
-        sort: new Set(Object.keys(WALLET_SORTS))
-      };
-      return raw.filter(v => v && typeof v.id === 'string' && typeof v.name === 'string' && v.filters && typeof v.filters === 'object')
-        .map(v => {
-          const filters = { ...WALLET_DEFAULTS, search: typeof v.filters.search === 'string' ? v.filters.search.slice(0, 80) : '' };
-          for (const k of Object.keys(allowed)) if (allowed[k].has(v.filters[k])) filters[k] = v.filters[k];
-          return { id: v.id.slice(0, 40), name: v.name.slice(0, VIEW_NAME_MAX), filters, custom: true };
-        });
-    }
-
-    function persistCustomViews(list) {
-      localStorage.setItem(VIEWS_KEY, JSON.stringify(list.map(v => ({ id: v.id, name: v.name, filters: v.filters }))));
-    }
-
     function allWalletViews() {
-      return [
-        ...WALLET_PRESETS.map(v => ({ ...v, filters: { ...WALLET_DEFAULTS, ...v.filters } })),
-        ...loadCustomViews()
-      ];
+      return WALLET_PRESETS.map(v => ({ ...v, filters: { ...WALLET_DEFAULTS, ...v.filters } }));
     }
 
     function applyWalletView(id) {
@@ -4990,38 +4097,7 @@
         const el = document.getElementById(WALLET_FILTER_IDS[k]);
         if (el) el.value = v.filters[k];
       }
-      savingWalletView = false;
       renderClientTable();
-    }
-
-    function startSavingWalletView() { savingWalletView = true; renderWalletViews(); const i = document.getElementById('view-name-input'); if (i) i.focus(); }
-    function cancelSavingWalletView() { savingWalletView = false; renderWalletViews(); }
-
-    function confirmSaveWalletView() {
-      const input = document.getElementById('view-name-input');
-      const name = (input?.value || '').trim().replace(/\s+/g, ' ').slice(0, VIEW_NAME_MAX);
-      if (!name) { showToast('Dê um nome para a visão.', 'warning'); input?.focus(); return; }
-      const list = loadCustomViews();
-      const f = readWalletFilters();
-      const existing = list.find(v => v.name.toLowerCase() === name.toLowerCase());
-      if (existing) { existing.filters = f; }
-      else {
-        if (list.length >= 20) { showToast('Limite de 20 visões pessoais.', 'warning'); return; }
-        list.push({ id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, filters: f, custom: true });
-      }
-      persistCustomViews(list);
-      savingWalletView = false;
-      renderWalletViews();
-      showToast(existing ? 'Visão "' + name + '" atualizada.' : 'Visão "' + name + '" salva.', 'success');
-    }
-
-    function deleteWalletView(id) {
-      const list = loadCustomViews();
-      const v = list.find(x => x.id === id);
-      if (!v) return;
-      persistCustomViews(list.filter(x => x.id !== id));
-      renderWalletViews();
-      showToast('Visão "' + v.name + '" excluída.', 'info');
     }
 
     function renderWalletViews() {
@@ -5029,87 +4105,22 @@
       if (!bar) return;
       const current = readWalletFilters();
       bar.textContent = '';
-
       const chipBase = 'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ';
       const idle = 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800';
       const on = 'bg-brand-50 dark:bg-brand-900/30 border-brand-500 text-brand-700 dark:text-brand-200';
-
       for (const v of allWalletViews()) {
         const active = sameFilters(current, v.filters);
-        const wrap = document.createElement('span');
-        wrap.className = 'inline-flex items-center';
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = chipBase + (active ? on : idle) + (v.custom ? ' rounded-r-none' : '');
+        b.className = chipBase + (active ? on : idle);
         b.setAttribute('aria-pressed', active ? 'true' : 'false');
         b.textContent = v.name;
         b.onclick = () => applyWalletView(v.id);
-        wrap.appendChild(b);
-        if (v.custom) {
-          const x = document.createElement('button');
-          x.type = 'button';
-          x.className = chipBase + 'rounded-l-none border-l-0 ' + (active ? on : idle);
-          x.setAttribute('aria-label', 'Excluir visão ' + v.name);
-          x.title = 'Excluir visão';
-          x.textContent = '×';
-          x.onclick = () => deleteWalletView(v.id);
-          wrap.appendChild(x);
-        }
-        bar.appendChild(wrap);
-      }
-
-      const dirty = !allWalletViews().some(v => sameFilters(current, v.filters));
-      if (savingWalletView) {
-        const form = document.createElement('form');
-        form.className = 'inline-flex items-center gap-2';
-        form.onsubmit = e => { e.preventDefault(); confirmSaveWalletView(); };
-        const input = document.createElement('input');
-        input.id = 'view-name-input';
-        input.type = 'text';
-        input.maxLength = VIEW_NAME_MAX;
-        input.placeholder = 'Nome da visão';
-        input.setAttribute('aria-label', 'Nome da visão');
-        input.className = 'px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500';
-        const ok = document.createElement('button');
-        ok.type = 'submit';
-        ok.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white hover:bg-brand-700';
-        ok.textContent = 'Salvar';
-        const cancel = document.createElement('button');
-        cancel.type = 'button';
-        cancel.className = chipBase + idle;
-        cancel.textContent = 'Cancelar';
-        cancel.onclick = cancelSavingWalletView;
-        form.append(input, ok, cancel);
-        bar.appendChild(form);
-      } else {
-        const save = document.createElement('button');
-        save.type = 'button';
-        save.className = chipBase + 'border-dashed ' + idle;
-        save.textContent = '+ Salvar visão atual';
-        save.title = dirty ? 'Salvar os filtros atuais como uma visão' : 'Os filtros atuais já correspondem a uma visão';
-        save.onclick = startSavingWalletView;
-        bar.appendChild(save);
+        bar.appendChild(b);
       }
     }
-
-    // O filtro de responsável acompanha a equipe atual (demo ou banco)
-    function populateOwnerFilter() {
-      const sel = document.getElementById('wallet-filter-owner');
-      if (!sel) return;
-      const keep = sel.value;
-      while (sel.options.length > 1) sel.remove(1);
-      for (const t of teamCSMs) {
-        const o = document.createElement('option');
-        o.value = String(t.id);
-        o.textContent = t.name;
-        sel.appendChild(o);
-      }
-      sel.value = [...sel.options].some(o => o.value === keep) ? keep : 'all';
-    }
-    window.populateOwnerFilter = populateOwnerFilter;
 
     document.addEventListener('DOMContentLoaded', () => {
-      populateOwnerFilter();
       renderWalletViews();
     });
   </script>
