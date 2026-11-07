@@ -87,19 +87,25 @@
       transform: scale(1);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    /* ===== Acessibilidade & responsividade (UX) ===== */
+    /* ===== Acessibilidade & responsividade (UX WCAG 2.1 AA) ===== */
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-    .skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 10px; background: #4f46e5; color: #fff; font-size: 13px; font-weight: 600; transition: top .15s; }
+    .skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: #0f6f70; color: #fff; font-size: 13px; font-weight: 600; transition: top .15s; }
     .skip-link:focus { top: 8px; }
-    :focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; border-radius: 6px; }
+    :focus-visible { outline: 2px solid #0f6f70; outline-offset: 2px; border-radius: 6px; }
+    .dark :focus-visible { outline-color: #43a5a0; }
     main:focus { outline: none; }
     /* Piso de legibilidade: nada abaixo de 11px (rótulos auxiliares) e 12px (texto corrido) */
     .text-\[9px\], .text-\[10px\] { font-size: 11px !important; }
     .text-\[11px\] { font-size: 12px !important; }
-    /* Alvos de toque */
-    td button, th button, header button, button.p-1\.5 { min-width: 32px; min-height: 32px; }
+    /* Alvos de toque acessíveis (WCAG 2.5.8 - mínimo 36px, ideal 40-44px) */
+    button, [role="button"], input[type="button"], input[type="submit"], select, .nav-btn { min-height: 38px; }
+    td button, th button, header button, button.p-1\.5 { min-width: 36px; min-height: 36px; }
     @media (pointer: coarse), (max-width: 767px) {
-      header button, .nav-btn, td button, [role="button"] { min-height: 40px; min-width: 40px; }
+      header button, .nav-btn, td button, th button, button, [role="button"], select, .tab-btn { min-height: 42px; min-width: 42px; }
+      .cal-day-cell { min-height: 44px; }
+      /* Previne estouro horizontal de viewport no mobile (375px) */
+      body { overflow-x: hidden; width: 100%; }
+      main { max-width: 100vw; overflow-x: hidden; }
     }
     /* Menu lateral em gaveta no mobile */
     #sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 55; }
@@ -204,11 +210,11 @@
       </div>
       <div>
         <label for="auth-email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
-        <input id="auth-email" type="email" autocomplete="username" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
+        <input id="auth-email" aria-label="E-mail de acesso corporativo" type="email" autocomplete="username" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
       </div>
       <div>
         <label for="auth-password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Senha</label>
-        <input id="auth-password" type="password" autocomplete="current-password" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
+        <input id="auth-password" aria-label="Senha de acesso" type="password" autocomplete="current-password" required class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500">
       </div>
       <p id="auth-message" role="alert" class="text-xs min-h-[1rem] text-rose-600 dark:text-rose-400"></p>
       <button id="auth-submit" type="submit" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors">Entrar</button>
@@ -239,15 +245,15 @@
 
     <!-- Quick Status Pill Counters (Interativos: clicam para filtrar) -->
     <div class="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-darkbg-850 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-inner">
-      <button onclick="filterByHealth('green')" title="Filtrar contas com Health Score Saudável" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all">
+      <button onclick="filterByHealth('green')" aria-label="Filtrar contas com Health Score saudável (7 contas)" title="Filtrar contas com Health Score Saudável" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span id="counter-green">7 Verde</span>
       </button>
-      <button onclick="filterByHealth('yellow')" title="Filtrar contas em Alerta" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 transition-all">
+      <button onclick="filterByHealth('yellow')" aria-label="Filtrar contas em alerta de atenção (2 contas)" title="Filtrar contas em Alerta" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 transition-all">
         <span class="w-2 h-2 rounded-full bg-amber-500"></span>
         <span id="counter-yellow">2 Atenção</span>
       </button>
-      <button onclick="filterByHealth('red')" title="Filtrar contas em Risco Iminente" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-rose-700 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
+      <button onclick="filterByHealth('red')" aria-label="Filtrar contas em risco crítico de churn (2 contas)" title="Filtrar contas em Risco Iminente" class="px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium text-rose-700 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
         <span class="w-2 h-2 rounded-full bg-rose-500"></span>
         <span id="counter-red">2 Crítico</span>
       </button>
@@ -327,16 +333,16 @@
             <button onclick="switchTab('churn-risk')" id="nav-churn-risk" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>
-                <span>Triagem de HS Baixo</span>
+                <span>Triagem de Risco (Health Score)</span>
               </div>
-              <span id="badge-churn-count" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">2</span>
+              <span id="badge-churn-count" aria-label="2 contas com score crítico em risco de cancelamento" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">2</span>
             </button>
             <button onclick="switchTab('onboarding')" id="nav-onboarding" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="rocket" class="w-4 h-4 text-indigo-400"></i>
                 <span>Onboarding & Treinamento</span>
               </div>
-              <span id="badge-onboarding-count" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">3</span>
+              <span id="badge-onboarding-count" aria-label="3 contas em processo de implantação e treinamento" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">3</span>
             </button>
             <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -355,7 +361,7 @@
           </nav>
         </div>
 
-        <!-- SEÇÃO 2: ENGAJAMENTO & EQUIPE ("RH DE CS") -->
+        <!-- SEÇÃO 2: ENGAJAMENTO & EQUIPE -->
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Comunicação & Time</span>
           <nav class="mt-2 space-y-1">
@@ -374,7 +380,7 @@
             <button onclick="switchTab('team')" id="nav-team" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-darkbg-800 hover:text-slate-900 dark:hover:text-white">
               <div class="flex items-center gap-3">
                 <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
-                <span>Equipe & Carteira CSM ("RH")</span>
+                <span>Equipe CSM & Carteira</span>
               </div>
             </button>
           </nav>
@@ -395,7 +401,7 @@
                 <i data-lucide="clock" class="w-4 h-4 text-brand-500"></i>
                 <span>Lembretes & Planilhas</span>
               </div>
-              <span id="badge-sheet-pending" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span id="badge-sheet-pending" aria-label="Planilhas pendentes de atualização" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             </button>
             <button onclick="openMasterAuthModal()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-darkbg-800 transition-all">
               <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400"></i>
@@ -456,8 +462,11 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2.5">
-              <span class="text-2xl">⏰</span>
+              <span class="p-2 rounded-xl bg-brand-500/10 text-brand-600 border border-brand-500/20">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+              </span>
               <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Central de Lembretes & Controle Operacional</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Planilhas simuladas">Exemplo</span>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Rotinas semanais para manter suas planilhas de IS, reuniões e agendas 100% atualizadas e auditadas por IA.
@@ -505,7 +514,7 @@
                 <!-- Planilha 1: IS -->
                 <div id="card-sheet-is" class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-all hover:border-slate-300 dark:hover:border-slate-700">
                   <div class="flex items-center gap-3">
-                    <input type="checkbox" id="check-sheet-is" onchange="toggleSheetStatus('is', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
+                    <input type="checkbox" id="check-sheet-is" aria-label="Atualizar status da planilha de IS" onchange="toggleSheetStatus('is', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
                     <div>
                       <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         Planilha de IS (Implementação / Sucesso)
@@ -523,7 +532,7 @@
                 <!-- Planilha 2: CS Reuniões -->
                 <div id="card-sheet-cs" class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-all hover:border-slate-300 dark:hover:border-slate-700">
                   <div class="flex items-center gap-3">
-                    <input type="checkbox" id="check-sheet-cs" onchange="toggleSheetStatus('cs', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
+                    <input type="checkbox" id="check-sheet-cs" aria-label="Atualizar status da planilha de CS reuniões e atas" onchange="toggleSheetStatus('cs', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
                     <div>
                       <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         Planilha de CS Reuniões & Atas
@@ -541,7 +550,7 @@
                 <!-- Planilha 3: Mapeamento de Churn Risk -->
                 <div id="card-sheet-churn" class="p-4 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-4 transition-all hover:border-slate-300 dark:hover:border-slate-700">
                   <div class="flex items-center gap-3">
-                    <input type="checkbox" id="check-sheet-churn" checked onchange="toggleSheetStatus('churn', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
+                    <input type="checkbox" id="check-sheet-churn" aria-label="Atualizar status da planilha de contenção de churn" checked onchange="toggleSheetStatus('churn', this.checked)" class="w-5 h-5 rounded border-slate-400 dark:border-slate-600 text-brand-600 focus:ring-brand-500 bg-white dark:bg-darkbg-800 cursor-pointer">
                     <div>
                       <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         Matriz de Contenção de Churn
@@ -590,19 +599,19 @@
               </div>
               <div class="space-y-2 text-xs">
                 <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-darkbg-800 cursor-pointer transition-colors">
-                  <input type="checkbox" checked onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
+                  <input type="checkbox" aria-label="Checar logins dos clientes em risco (>7 dias sem acesso)" checked onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
                   <span class="text-slate-700 dark:text-slate-300">Checar logins dos clientes em risco (&gt;7 dias sem acesso)</span>
                 </label>
                 <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-darkbg-800 cursor-pointer transition-colors">
-                  <input type="checkbox" checked onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
+                  <input type="checkbox" aria-label="Revisar tickets de suporte abertos com prioridade P1/P2" checked onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
                   <span class="text-slate-700 dark:text-slate-300">Revisar tickets de suporte abertos com prioridade P1/P2</span>
                 </label>
                 <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-darkbg-800 cursor-pointer transition-colors">
-                  <input type="checkbox" onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
+                  <input type="checkbox" aria-label="Enviar ata e próximos passos da call da Rede Mais Fidelidade" onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
                   <span class="text-slate-700 dark:text-slate-300">Enviar ata e próximos passos da call da Rede Mais Fidelidade</span>
                 </label>
                 <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-darkbg-800 cursor-pointer transition-colors">
-                  <input type="checkbox" onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
+                  <input type="checkbox" aria-label="Disparar lembrete de QBR para a diretoria da NexStore" onchange="updateRoutineProgress()" class="rounded border-slate-400 text-brand-600 focus:ring-brand-500">
                   <span class="text-slate-700 dark:text-slate-300">Disparar lembrete de QBR para a diretoria da NexStore</span>
                 </label>
               </div>
@@ -874,23 +883,24 @@
           </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="relative flex-1 max-w-md">
+              <label for="wallet-search" class="sr-only">Buscar cliente por nome, segmento ou contato:</label>
               <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-              <input type="text" id="wallet-search" oninput="renderClientTable()" placeholder="Buscar cliente por nome, segmento ou contato..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
+              <input type="text" id="wallet-search" aria-label="Buscar cliente por nome, segmento ou contato" oninput="renderClientTable()" placeholder="Buscar cliente por nome, segmento ou contato..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-colors">
             </div>
-            <div class="flex items-center gap-2">
-              <select id="wallet-filter-tier" aria-label="Filtrar por plano" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="wallet-filter-tier" aria-label="Filtrar por plano" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os Tiers</option>
                 <option value="Enterprise">Enterprise</option>
                 <option value="Mid-Market">Mid-Market</option>
                 <option value="SMB">SMB / Pro</option>
               </select>
-              <select id="wallet-filter-status" aria-label="Filtrar por saúde" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-filter-status" aria-label="Filtrar por saúde" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os Status</option>
                 <option value="green">Verde (Saudável)</option>
                 <option value="yellow">Atenção (Alerta)</option>
                 <option value="red">Crítico (Risco de Churn)</option>
               </select>
-              <select id="wallet-filter-phase" aria-label="Filtrar por fase" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-filter-phase" aria-label="Filtrar por fase" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todas as Fases</option>
                 <option value="onboarding">Em onboarding</option>
                 <option value="Kickoff">Kickoff</option>
@@ -898,10 +908,10 @@
                 <option value="Treinamento">Treinamento</option>
                 <option value="Go-Live">Go-Live</option>
               </select>
-              <select id="wallet-filter-owner" aria-label="Filtrar por responsável" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-filter-owner" aria-label="Filtrar por responsável" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="all">Todos os CSMs</option>
               </select>
-              <select id="wallet-sort" aria-label="Ordenar" onchange="renderClientTable()" class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
+              <select id="wallet-sort" aria-label="Ordenar" onchange="renderClientTable()" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 focus:outline-none">
                 <option value="none">Ordem padrão</option>
                 <option value="hs_asc">Menor score primeiro</option>
                 <option value="hs_desc">Maior score primeiro</option>
@@ -1073,7 +1083,10 @@
       <section id="tab-reports" class="tab-content hidden space-y-6 animate-tab">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Relatórios Executivos & QBR</h2>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Relatórios Executivos & QBR</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Dados consolidados para demonstração visual">Exemplo</span>
+            </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Consolidação automática de resultados para apresentação à diretoria e reuniões executivas.</p>
           </div>
           <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-2 active:scale-95 transition-all">
@@ -1203,20 +1216,20 @@
             <!-- Seletores: Cliente & Modelo de Gatilho -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Destinatário (Cliente da Carteira):</label>
-                <select id="comm-client-select" onchange="onCadenceClientChange()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
+                <label for="comm-client-select" class="block text-xs font-semibold text-slate-400 mb-1.5">Destinatário (Cliente da Carteira):</label>
+                <select id="comm-client-select" aria-label="Destinatário: cliente da carteira" onchange="onCadenceClientChange()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
                   <!-- Preenchido via JS -->
                 </select>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Objetivo do Contato (Gatilho de CS):</label>
-                <select id="comm-trigger-type" onchange="generateCadenceDraft()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <option value="churn_rescue">🚨 Resgate de Conta Inativa / Risco de Churn</option>
-                  <option value="onboarding_unlock">⚙️ Apoio para Destravar Onboarding & Carga</option>
-                  <option value="qbr_invite">📊 Convite para Reunião Estratégica (QBR)</option>
-                  <option value="training_confirm">🎓 Lembrete de Treinamento com Link Meet</option>
-                  <option value="nps_champion">⭐ Reconhecimento de Sucesso & Pedido de Depoimento</option>
+                <label for="comm-trigger-type" class="block text-xs font-semibold text-slate-400 mb-1.5">Objetivo do Contato (Gatilho de CS):</label>
+                <select id="comm-trigger-type" aria-label="Objetivo do contato e gatilho de CS" onchange="generateCadenceDraft()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
+                  <option value="churn_rescue">Resgate de Conta Inativa / Risco de Churn</option>
+                  <option value="onboarding_unlock">Apoio para Destravar Onboarding & Carga</option>
+                  <option value="qbr_invite">Convite para Reunião Estratégica (QBR)</option>
+                  <option value="training_confirm">Lembrete de Treinamento com Link Meet</option>
+                  <option value="nps_champion">Reconhecimento de Sucesso & Pedido de Depoimento</option>
                 </select>
               </div>
             </div>
@@ -1229,24 +1242,24 @@
             <!-- Editor de Mensagem com Prompt de IA -->
             <div class="space-y-2">
               <div class="flex items-center justify-between">
-                <label class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <label for="comm-message-text" class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                   <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                   <span>Mensagem Personalizada:</span>
                 </label>
                 <div class="flex items-center gap-1.5">
-                  <button onclick="refineMessageWithAI('empatico')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
+                  <button onclick="refineMessageWithAI('empatico')" aria-label="Tornar mensagem mais empática" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
                     Mais Empático
                   </button>
-                  <button onclick="refineMessageWithAI('direto')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
+                  <button onclick="refineMessageWithAI('direto')" aria-label="Tornar mensagem mais direta" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-darkbg-800 hover:bg-slate-200 dark:hover:bg-darkbg-700 text-[11px] text-slate-300 transition-all">
                     Mais Direto
                   </button>
-                  <button onclick="generateCadenceDraft()" class="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 text-[11px] font-semibold transition-all flex items-center gap-1">
+                  <button onclick="generateCadenceDraft()" aria-label="Recriar mensagem com IA" class="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 text-[11px] font-semibold transition-all flex items-center gap-1">
                     <i data-lucide="refresh-cw" class="w-3 h-3"></i> Recriar
                   </button>
                 </div>
               </div>
 
-              <textarea id="comm-message-text" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"></textarea>
+              <textarea id="comm-message-text" aria-label="Texto da mensagem personalizada de contato" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"></textarea>
             </div>
 
             <!-- Botões de Disparo Imediato -->
@@ -1531,6 +1544,7 @@
                 <i data-lucide="megaphone" class="w-5 h-5"></i>
               </span>
               <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kits para o RH & Campanhas Sazonais</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20" title="Modelos gerados com IA para demonstração">Exemplo</span>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Geração com IA de materiais de comunicação interna para o RH engajar os colaboradores e elevar a taxa de uso dos benefícios.
@@ -1552,19 +1566,19 @@
             <!-- Seletores -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label class="block font-semibold text-slate-400 mb-1.5">Empresa Cliente Alvo:</label>
-                <select id="campaign-client-select" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
+                <label for="campaign-client-select" class="block font-semibold text-slate-400 mb-1.5">Empresa Cliente Alvo:</label>
+                <select id="campaign-client-select" aria-label="Empresa cliente alvo da campanha" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
                   <!-- Preenchido via JS -->
                 </select>
               </div>
               <div>
-                <label class="block font-semibold text-slate-400 mb-1.5">Foco da Campanha:</label>
-                <select id="campaign-focus-select" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
-                  <option value="activation">🚀 Alavancar Ativação de Novos Colaboradores</option>
-                  <option value="meal">🍽️ Destaque dos Benefícios de Alimentação & Refeição</option>
-                  <option value="health">💊 Economia em Farmácias & Descontos em Saúde</option>
-                  <option value="mobility">⛽ Benefício de Mobilidade Urbana & Combustível</option>
-                  <option value="education">🎓 Bolsas de Estudos & Cursos Profissionalizantes</option>
+                <label for="campaign-focus-select" class="block font-semibold text-slate-400 mb-1.5">Foco da Campanha:</label>
+                <select id="campaign-focus-select" aria-label="Foco da campanha de benefícios" onchange="generateInternalKit()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500">
+                  <option value="activation">Alavancar Ativação de Novos Colaboradores</option>
+                  <option value="meal">Destaque dos Benefícios de Alimentação & Refeição</option>
+                  <option value="health">Economia em Farmácias & Descontos em Saúde</option>
+                  <option value="mobility">Benefício de Mobilidade Urbana & Combustível</option>
+                  <option value="education">Bolsas de Estudos & Cursos Profissionalizantes</option>
                 </select>
               </div>
             </div>
@@ -1585,20 +1599,20 @@
             <!-- Conteúdo Gerado do Kit -->
             <div class="space-y-3">
               <div id="kit-content-email" class="space-y-2">
-                <label class="text-[11px] font-semibold text-slate-400">Assunto do E-mail:</label>
-                <input type="text" id="kit-email-subject" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 font-semibold" readonly>
-                <label class="text-[11px] font-semibold text-slate-400 block pt-1">Corpo da Mensagem:</label>
-                <textarea id="kit-email-body" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+                <label for="kit-email-subject" class="text-[11px] font-semibold text-slate-400">Assunto do E-mail:</label>
+                <input type="text" id="kit-email-subject" aria-label="Assunto do e-mail do kit de engajamento" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 font-semibold" readonly>
+                <label for="kit-email-body" class="text-[11px] font-semibold text-slate-400 block pt-1">Corpo da Mensagem:</label>
+                <textarea id="kit-email-body" aria-label="Corpo do e-mail corporativo para colaboradores" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
               </div>
 
               <div id="kit-content-whatsapp" class="space-y-2 hidden">
-                <label class="text-[11px] font-semibold text-slate-400">Texto Otimizado para WhatsApp:</label>
-                <textarea id="kit-whatsapp-body" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+                <label for="kit-whatsapp-body" class="text-[11px] font-semibold text-slate-400">Texto Otimizado para WhatsApp:</label>
+                <textarea id="kit-whatsapp-body" aria-label="Texto de WhatsApp para colaboradores" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
               </div>
 
               <div id="kit-content-mural" class="space-y-2 hidden">
-                <label class="text-[11px] font-semibold text-slate-400">Comunicado para Intranet / Mural:</label>
-                <textarea id="kit-mural-body" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
+                <label for="kit-mural-body" class="text-[11px] font-semibold text-slate-400">Comunicado para Intranet / Mural:</label>
+                <textarea id="kit-mural-body" aria-label="Texto para cartaz mural ou comunicado intranet" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 leading-relaxed font-sans" readonly></textarea>
               </div>
             </div>
 
@@ -1668,6 +1682,7 @@
                 <i data-lucide="store" class="w-5 h-5"></i>
               </span>
               <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Rede de Parceiros & Gestão LGPD</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Mix de benefícios e dados de exemplo para demonstração">Exemplo</span>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Mapeamento do mix de benefícios, categorias mais utilizadas, demandas regionais e auditoria de conformidade.
@@ -1683,39 +1698,49 @@
 
         <!-- 5 Categorias Principais de Benefício -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span class="text-2xl">🍽️</span>
-            <strong class="block text-sm font-bold text-slate-200 pt-1">Refeição & Alimentação</strong>
-            <span class="text-emerald-400 font-bold text-xs">42% do volume</span>
-            <p class="text-[11px] text-slate-400">R$ 39.5k/mês transacionados</p>
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 w-fit">
+              <i data-lucide="utensils" class="w-5 h-5"></i>
+            </div>
+            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Refeição & Alimentação</strong>
+            <span class="text-emerald-500 dark:text-emerald-400 font-bold text-xs">42% do volume</span>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 39.5k/mês transacionados</p>
           </div>
 
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span class="text-2xl">🏥</span>
-            <strong class="block text-sm font-bold text-slate-200 pt-1">Saúde & Farmácia</strong>
-            <span class="text-emerald-400 font-bold text-xs">28% do volume</span>
-            <p class="text-[11px] text-slate-400">R$ 26.3k/mês em descontos</p>
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 w-fit">
+              <i data-lucide="heart-pulse" class="w-5 h-5"></i>
+            </div>
+            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Saúde & Farmácia</strong>
+            <span class="text-emerald-500 dark:text-emerald-400 font-bold text-xs">28% do volume</span>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 26.3k/mês em descontos</p>
           </div>
 
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span class="text-2xl">🚗</span>
-            <strong class="block text-sm font-bold text-slate-200 pt-1">Mobilidade & Combustível</strong>
-            <span class="text-indigo-400 font-bold text-xs">15% do volume</span>
-            <p class="text-[11px] text-slate-400">R$ 14.1k/mês em rotas</p>
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 w-fit">
+              <i data-lucide="car" class="w-5 h-5"></i>
+            </div>
+            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Mobilidade & Combustível</strong>
+            <span class="text-indigo-500 dark:text-indigo-400 font-bold text-xs">15% do volume</span>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 14.1k/mês em rotas</p>
           </div>
 
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span class="text-2xl">📚</span>
-            <strong class="block text-sm font-bold text-slate-200 pt-1">Educação & Cursos</strong>
-            <span class="text-purple-400 font-bold text-xs">9% do volume</span>
-            <p class="text-[11px] text-slate-400">R$ 8.4k/mês em bolsas</p>
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 w-fit">
+              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </div>
+            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Educação & Cursos</strong>
+            <span class="text-purple-500 dark:text-purple-400 font-bold text-xs">9% do volume</span>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 8.4k/mês em bolsas</p>
           </div>
 
-          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-            <span class="text-2xl">🛍️</span>
-            <strong class="block text-sm font-bold text-slate-200 pt-1">Clube de Compras</strong>
-            <span class="text-amber-400 font-bold text-xs">6% do volume</span>
-            <p class="text-[11px] text-slate-400">R$ 5.9k/mês em cupons</p>
+          <div class="p-4 rounded-2xl bg-white dark:bg-darkbg-850 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 w-fit">
+              <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            </div>
+            <strong class="block text-sm font-bold text-slate-800 dark:text-slate-100 pt-0.5">Clube de Compras</strong>
+            <span class="text-amber-500 dark:text-amber-400 font-bold text-xs">6% do volume</span>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">R$ 5.9k/mês em cupons</p>
           </div>
         </div>
 
@@ -1794,7 +1819,7 @@
       </section>
 
       <!-- ================= MODAL: DETALHES DA REUNIÃO / BRIEFING IA ================= -->
-      <div id="calendar-meeting-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div id="calendar-meeting-modal" role="dialog" aria-modal="true" aria-labelledby="cal-modal-title" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg p-6 shadow-2xl space-y-4 animate-tab">
           <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2.5">
@@ -1804,7 +1829,7 @@
                 <p id="cal-modal-subject" class="text-xs text-slate-400">Treinamento de Equipe Admin</p>
               </div>
             </div>
-            <button onclick="closeMeetingDetailModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700">
+            <button onclick="closeMeetingDetailModal()" aria-label="Fechar modal de detalhes da reunião" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1880,16 +1905,16 @@
           Estou monitorando seus clientes em tempo real. Hoje temos reuniões com briefings e auditoria de planilhas de IS. Como posso te apoiar agora?
         </p>
         <div class="space-y-1.5 pt-1">
-          <button onclick="sendQuickCopilotPrompt('Gerar roteiro de call para o Clube Prime Associados focado em destravar o login')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-300 flex items-center justify-between active:scale-98 transition-all">
-            <span>📞 Roteiro de call Clube Prime</span>
+          <button onclick="sendQuickCopilotPrompt('Gerar roteiro de call para o Clube Prime Associados focado em destravar o login')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between active:scale-98 transition-all">
+            <span class="flex items-center gap-1.5"><i data-lucide="phone-call" class="w-3.5 h-3.5 text-brand-500"></i> Roteiro de call Clube Prime</span>
             <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500"></i>
           </button>
-          <button onclick="sendQuickCopilotPrompt('Escrever e-mail amigável cobrando a atualização de dados da planilha de IS')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-300 flex items-center justify-between active:scale-98 transition-all">
-            <span>✉️ Rascunhar e-mail de reengajamento</span>
+          <button onclick="sendQuickCopilotPrompt('Escrever e-mail amigável cobrando a atualização de dados da planilha de IS')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between active:scale-98 transition-all">
+            <span class="flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i> Rascunhar e-mail de reengajamento</span>
             <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500"></i>
           </button>
-          <button onclick="sendQuickCopilotPrompt('Quais são os 2 clientes com maior probabilidade de churn e o que fazer?')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-300 flex items-center justify-between active:scale-98 transition-all">
-            <span>🚨 Análise preditiva de risco da carteira</span>
+          <button onclick="sendQuickCopilotPrompt('Quais são os 2 clientes com maior probabilidade de churn e o que fazer?')" class="w-full text-left p-2 rounded-lg bg-white dark:bg-darkbg-900 hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between active:scale-98 transition-all">
+            <span class="flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-500"></i> Análise preditiva de risco da carteira</span>
             <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500"></i>
           </button>
         </div>
@@ -1899,8 +1924,9 @@
     <!-- Input Box -->
     <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-darkbg-850/80">
       <form id="copilot-form" onsubmit="handleCopilotSubmit(event)" class="flex items-center gap-2">
-        <input type="text" id="copilot-input" placeholder="Pergunte ao Copilot sobre qualquer cliente..." class="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-500">
-        <button type="submit" id="btn-send-copilot" class="p-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-md active:scale-95 transition-all">
+        <label for="copilot-input" class="sr-only">Pergunta para o Copilot:</label>
+        <input type="text" id="copilot-input" aria-label="Pergunta ou comando para o assistente Copilot" placeholder="Pergunte ao Copilot sobre qualquer cliente..." class="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-500">
+        <button type="submit" id="btn-send-copilot" aria-label="Enviar mensagem ao Copilot" class="p-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-md active:scale-95 transition-all">
           <i data-lucide="send" class="w-4 h-4"></i>
         </button>
       </form>
@@ -1908,21 +1934,21 @@
   </div>
 
   <!-- ================= MODAL: AUTENTICAÇÃO SENHA MASTER ================= -->
-  <div id="master-auth-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="master-auth-modal" role="dialog" aria-modal="true" aria-labelledby="master-auth-title" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-sm p-6 shadow-2xl space-y-4 animate-tab">
       <div class="flex items-center gap-3">
         <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
           <i data-lucide="lock" class="w-6 h-6"></i>
         </div>
         <div>
-          <h3 class="font-bold text-base text-slate-900 dark:text-white">Acesso Master</h3>
+          <h3 id="master-auth-title" class="font-bold text-base text-slate-900 dark:text-white">Acesso Master</h3>
           <p class="text-xs text-slate-400">Área restrita de Governança & IA</p>
         </div>
       </div>
       <form onsubmit="handleMasterAuthSubmit(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Informe a Senha Master:</label>
-          <input type="password" id="input-master-password" placeholder="Digite sua senha master..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+          <label for="input-master-password" class="block font-semibold text-slate-300 mb-1">Informe a Senha Master:</label>
+          <input type="password" id="input-master-password" aria-label="Informe a Senha Master" placeholder="Digite sua senha master..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
           <span id="master-auth-hint" class="text-[10px] text-slate-500 block mt-1"></span>
         </div>
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
@@ -1936,7 +1962,7 @@
   </div>
 
   <!-- ================= MODAL: PAINEL DE CONFIGURAÇÕES MASTER ================= -->
-  <div id="master-config-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+  <div id="master-config-modal" role="dialog" aria-modal="true" aria-labelledby="master-config-title" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-6 animate-tab">
       
       <!-- Topo Modal -->
@@ -1946,11 +1972,11 @@
             <i data-lucide="sliders" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-extrabold text-lg text-slate-900 dark:text-white">Painel de Configurações Master & IA Hub</h3>
+            <h3 id="master-config-title" class="font-extrabold text-lg text-slate-900 dark:text-white">Painel de Configurações Master & IA Hub</h3>
             <p class="text-xs text-slate-400">Controle de chaves de API, provedor ativo de IA, regras de negócio e backup</p>
           </div>
         </div>
-        <button onclick="closeMasterConfigModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700 active:scale-95 transition-all">
+        <button onclick="closeMasterConfigModal()" aria-label="Fechar painel de configurações master" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700 active:scale-95 transition-all">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -1988,10 +2014,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Provedor Ativo -->
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Provedor Primário de IA:</label>
-            <select id="cfg-ai-provider" onchange="handleAIProviderChange()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-medium">
-              <option value="groq">⚡ Groq LPU (Ultra-Fast - https://api.groq.com/openai/v1)</option>
-              <option value="gemini">✨ Google Gemini AI (Google AI Studio - OpenAI Compatible)</option>
+            <label for="cfg-ai-provider" class="block font-semibold text-slate-300 mb-1">Provedor Primário de IA:</label>
+            <select id="cfg-ai-provider" aria-label="Provedor primário de inteligência artificial" onchange="handleAIProviderChange()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-medium">
+              <option value="groq">Groq LPU (Ultra-Fast - https://api.groq.com/openai/v1)</option>
+              <option value="gemini">Google Gemini AI (Google AI Studio - OpenAI Compatible)</option>
               <option value="omniroute">OmniRoute Local (http://localhost:20128/v1)</option>
               <option value="grok">xAI / Grok (https://api.x.ai/v1)</option>
               <option value="nvidia">NVIDIA NIM (https://integrate.api.nvidia.com/v1)</option>
@@ -2002,15 +2028,15 @@
 
           <!-- Modelo Alvo -->
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Modelo / Engine ID:</label>
-            <input type="text" id="cfg-ai-model" placeholder="Ex: llama-3.3-70b-versatile, gemini-2.5-flash, grok-beta" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
+            <label for="cfg-ai-model" class="block font-semibold text-slate-300 mb-1">Modelo / Engine ID:</label>
+            <input type="text" id="cfg-ai-model" aria-label="Modelo de IA ou Engine ID" placeholder="Ex: llama-3.3-70b-versatile, gemini-2.5-flash, grok-beta" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
           </div>
         </div>
 
         <!-- Endpoint URL -->
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Endpoint da API (OpenAI Compatible):</label>
-          <input type="text" id="cfg-ai-endpoint" placeholder="http://localhost:20128/v1" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
+          <label for="cfg-ai-endpoint" class="block font-semibold text-slate-300 mb-1">Endpoint da API (OpenAI Compatible):</label>
+          <input type="text" id="cfg-ai-endpoint" aria-label="Endpoint da API OpenAI Compatible" placeholder="http://localhost:20128/v1" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
         </div>
 
         <!-- Chave de API: fica só no servidor -->
@@ -2049,8 +2075,8 @@
             </a>
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Webhook URL do Google Apps Script (Opcional):</label>
-            <input type="text" id="cfg-google-sheets-webhook" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-2.5 rounded-xl bg-darkbg-850 border border-slate-700 text-slate-100 font-mono text-[11px]">
+            <label for="cfg-google-sheets-webhook" class="block font-semibold text-slate-300 mb-1">Webhook URL do Google Apps Script (Opcional):</label>
+            <input type="text" id="cfg-google-sheets-webhook" aria-label="URL do webhook do Google Apps Script" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-2.5 rounded-xl bg-darkbg-850 border border-slate-700 text-slate-100 font-mono text-[11px]">
             <span class="text-[10px] text-slate-500 mt-1 block">Permite envio automático das atualizações de IS/CS diretamente para sua planilha corporativa do Google Drive.</span>
           </div>
           <button onclick="testGoogleSheetsWebhook()" type="button" class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-darkbg-800 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-200 font-semibold transition-all flex items-center gap-1.5 active:scale-95">
@@ -2065,12 +2091,12 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-400 mb-1">Link Padrão do Meet:</label>
-              <input type="text" id="cfg-google-meet-url" placeholder="https://meet.google.com/new" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white font-mono text-[11px]">
+              <label for="cfg-google-meet-url" class="block text-slate-400 mb-1">Link Padrão do Meet:</label>
+              <input type="text" id="cfg-google-meet-url" aria-label="Link padrão do Google Meet" placeholder="https://meet.google.com/new" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white font-mono text-[11px]">
             </div>
             <div>
-              <label class="block text-slate-400 mb-1">Lembrete no Google Agenda:</label>
-              <select id="cfg-google-reminder-time" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white text-[11px]">
+              <label for="cfg-google-reminder-time" class="block text-slate-400 mb-1">Lembrete no Google Agenda:</label>
+              <select id="cfg-google-reminder-time" aria-label="Tempo de antecedência do lembrete na agenda" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white text-[11px]">
                 <option value="10">10 minutos antes</option>
                 <option value="15" selected>15 minutos antes</option>
                 <option value="30">30 minutos antes</option>
@@ -2098,12 +2124,12 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold text-slate-300 mb-1">API Token da Salez:</label>
-              <input type="password" id="cfg-salez-token" placeholder="Bearer Token gerado no painel da Salez" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-100 font-mono text-xs">
+              <label for="cfg-salez-token" class="block font-semibold text-slate-300 mb-1">API Token da Salez:</label>
+              <input type="password" id="cfg-salez-token" aria-label="API Token Bearer da Salez" placeholder="Bearer Token gerado no painel da Salez" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-100 font-mono text-xs">
             </div>
             <div>
-              <label class="block font-semibold text-slate-300 mb-1">ID do Funcionário Digital (Agent ID):</label>
-              <input type="text" id="cfg-salez-agent-id" placeholder="Ex: agt_cs_onboarding_v1" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-100 font-mono text-xs">
+              <label for="cfg-salez-agent-id" class="block font-semibold text-slate-300 mb-1">ID do Funcionário Digital (Agent ID):</label>
+              <input type="text" id="cfg-salez-agent-id" aria-label="ID do agente ou funcionário digital Salez" placeholder="Ex: agt_cs_onboarding_v1" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-100 font-mono text-xs">
             </div>
           </div>
         </div>
@@ -2121,8 +2147,8 @@
             Cadastre este endpoint no painel da Salez em <strong>Configurações &gt; Webhooks &gt; Venda Fechada (Deal Won)</strong>. Sempre que uma venda for concluída, o cliente entrará automaticamente no Onboarding:
           </p>
           <div class="flex items-center gap-2">
-            <input type="text" id="cfg-salez-webhook-url" readonly value="https://pulsecs-hub.vercel.app/api/salez-webhook" class="w-full p-2 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-300 font-mono text-xs">
-            <button onclick="copySalezWebhookUrl()" type="button" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1 active:scale-95 transition-all shrink-0">
+            <input type="text" id="cfg-salez-webhook-url" aria-label="URL do webhook de entrada da Salez" readonly value="https://pulsecs-hub.vercel.app/api/salez-webhook" class="w-full p-2 rounded-xl bg-slate-100 dark:bg-darkbg-850 border border-slate-300 dark:border-slate-700 text-slate-300 font-mono text-xs">
+            <button onclick="copySalezWebhookUrl()" aria-label="Copiar URL do webhook Salez" type="button" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1 active:scale-95 transition-all shrink-0">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
             </button>
           </div>
@@ -2154,12 +2180,12 @@
       <div id="cfg-subtab-rules" class="space-y-4 text-xs hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Dias sem Login para Disparar Alerta Vermelho:</label>
-            <input type="number" id="cfg-rule-inactivity-days" value="7" min="1" max="90" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+            <label for="cfg-rule-inactivity-days" class="block font-semibold text-slate-300 mb-1">Dias sem Login para Disparar Alerta Vermelho:</label>
+            <input type="number" id="cfg-rule-inactivity-days" aria-label="Dias sem login para alerta vermelho" value="7" min="1" max="90" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">SLA Máximo de Onboarding (Dias):</label>
-            <input type="number" id="cfg-rule-onboarding-sla" value="30" min="5" max="180" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+            <label for="cfg-rule-onboarding-sla" class="block font-semibold text-slate-300 mb-1">SLA Máximo de Onboarding (Dias):</label>
+            <input type="number" id="cfg-rule-onboarding-sla" aria-label="SLA máximo de onboarding em dias" value="30" min="5" max="180" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
           </div>
         </div>
         <div class="p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-800 text-slate-400">
@@ -2173,12 +2199,12 @@
           <h4 class="font-bold text-sm text-slate-100">Alterar Senha Master</h4>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-400 mb-1">Nova Senha:</label>
-              <input type="password" id="cfg-new-master-pass" placeholder="Mínimo 6 caracteres" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white">
+              <label for="cfg-new-master-pass" class="block text-slate-400 mb-1">Nova Senha:</label>
+              <input type="password" id="cfg-new-master-pass" aria-label="Nova senha master" placeholder="Mínimo 6 caracteres" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white">
             </div>
             <div>
-              <label class="block text-slate-400 mb-1">Confirmar Nova Senha:</label>
-              <input type="password" id="cfg-confirm-master-pass" placeholder="Repita a nova senha" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white">
+              <label for="cfg-confirm-master-pass" class="block text-slate-400 mb-1">Confirmar Nova Senha:</label>
+              <input type="password" id="cfg-confirm-master-pass" aria-label="Confirmar nova senha master" placeholder="Repita a nova senha" class="w-full p-2 rounded-lg bg-darkbg-850 border border-slate-700 text-white">
             </div>
           </div>
           <button onclick="updateMasterPassword()" type="button" class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-darkbg-750 hover:bg-indigo-600 hover:text-white font-semibold active:scale-95 transition-all">
@@ -2196,7 +2222,7 @@
             </button>
             <label class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-darkbg-800 hover:bg-slate-300 dark:hover:bg-darkbg-700 text-slate-800 dark:text-slate-200 font-semibold cursor-pointer border border-slate-700 flex items-center gap-1.5 active:scale-95">
               <i data-lucide="upload" class="w-4 h-4"></i> Restaurar do JSON
-              <input type="file" id="cfg-import-file" accept=".json" onchange="importFullJSONBackup(event)" class="hidden">
+              <input type="file" id="cfg-import-file" aria-label="Importar arquivo JSON de backup" accept=".json" onchange="importFullJSONBackup(event)" class="hidden">
             </label>
           </div>
         </div>
@@ -2215,14 +2241,14 @@
   </div>
 
   <!-- ================= MODAL: ADICIONAR / EDITAR CLIENTE ================= -->
-  <div id="client-form-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="client-form-modal" role="dialog" aria-modal="true" aria-labelledby="client-form-title" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg p-6 shadow-2xl space-y-4 animate-tab">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
         <h3 id="client-form-title" class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
           <i data-lucide="building" class="w-4 h-4 text-brand-500"></i>
           <span>Novo Cliente na Carteira</span>
         </h3>
-        <button onclick="closeClientFormModal()" class="p-1 text-slate-400 hover:text-white">
+        <button onclick="closeClientFormModal()" aria-label="Fechar formulário de cliente" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -2230,29 +2256,29 @@
       <form onsubmit="handleClientFormSubmit(event)" class="space-y-3 text-xs">
         <input type="hidden" id="form-client-id">
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Nome da Empresa / Cliente:</label>
-          <input type="text" id="form-client-name" required placeholder="Ex: MegaVarejo S/A" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+          <label for="form-client-name" class="block font-semibold text-slate-300 mb-1">Nome da Empresa / Cliente:</label>
+          <input type="text" id="form-client-name" aria-label="Nome da Empresa ou Cliente" required placeholder="Ex: MegaVarejo S/A" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Tier / Porte:</label>
-            <select id="form-client-tier" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+            <label for="form-client-tier" class="block font-semibold text-slate-300 mb-1">Tier / Porte:</label>
+            <select id="form-client-tier" aria-label="Tier e porte do cliente" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
               <option value="Enterprise">Enterprise</option>
               <option value="Mid-Market">Mid-Market</option>
               <option value="SMB">SMB / Pro</option>
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">MRR Recorrente (R$):</label>
-            <input type="number" id="form-client-mrr" required placeholder="Ex: 10000" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
+            <label for="form-client-mrr" class="block font-semibold text-slate-300 mb-1">MRR Recorrente (R$):</label>
+            <input type="number" id="form-client-mrr" aria-label="MRR Recorrente em reais" required placeholder="Ex: 10000" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Fase do Cliente:</label>
-            <select id="form-client-phase" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+            <label for="form-client-phase" class="block font-semibold text-slate-300 mb-1">Fase do Cliente:</label>
+            <select id="form-client-phase" aria-label="Fase atual do cliente no onboarding" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
               <option value="Kickoff">Kickoff & Dados</option>
               <option value="Config & Carga">Config & Integração</option>
               <option value="Treinamento">Treinamento Admin</option>
@@ -2260,19 +2286,19 @@
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Health Score Inicial (0 a 100):</label>
-            <input type="number" id="form-client-hs" min="0" max="100" value="80" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
+            <label for="form-client-hs" class="block font-semibold text-slate-300 mb-1">Health Score Inicial (0 a 100):</label>
+            <input type="number" id="form-client-hs" aria-label="Health score inicial de zero a cem" min="0" max="100" value="80" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100 font-mono">
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Contato Principal & Cargo:</label>
-          <input type="text" id="form-client-contact" required placeholder="Ex: Marcos Souza (Diretor de TI)" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+          <label for="form-client-contact" class="block font-semibold text-slate-300 mb-1">Contato Principal & Cargo:</label>
+          <input type="text" id="form-client-contact" aria-label="Contato principal e cargo" required placeholder="Ex: Marcos Souza (Diretor de TI)" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Anotações de Risco ou Atenção:</label>
-          <input type="text" id="form-client-risk" placeholder="Ex: Nenhum ou Troca de liderança interna" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
+          <label for="form-client-risk" class="block font-semibold text-slate-300 mb-1">Anotações de Risco ou Atenção:</label>
+          <input type="text" id="form-client-risk" aria-label="Anotações de risco ou atenção" placeholder="Ex: Nenhum ou Troca de liderança interna" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-100">
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -2286,7 +2312,7 @@
   </div>
 
   <!-- ================= MODAL: RAIO-X DO CLIENTE ================= -->
-  <div id="client-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="client-modal" role="dialog" aria-modal="true" aria-labelledby="modal-client-name" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-5 animate-tab">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-3">
@@ -2299,13 +2325,13 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="editCurrentClientFromModal()" class="p-1.5 rounded-lg bg-slate-200 dark:bg-darkbg-700 hover:bg-indigo-600 hover:text-white text-slate-400 active:scale-95 transition-all" title="Editar este cliente">
+          <button onclick="editCurrentClientFromModal()" class="p-1.5 rounded-lg bg-slate-200 dark:bg-darkbg-700 hover:bg-indigo-600 hover:text-white text-slate-400 active:scale-95 transition-all" title="Editar este cliente" aria-label="Editar dados deste cliente">
             <i data-lucide="edit" class="w-4 h-4"></i>
           </button>
-          <button onclick="deleteCurrentClientFromModal()" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white active:scale-95 transition-all" title="Excluir cliente">
+          <button onclick="deleteCurrentClientFromModal()" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white active:scale-95 transition-all" title="Excluir cliente" aria-label="Excluir este cliente da carteira">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
-          <button onclick="closeClientModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700 active:scale-95">
+          <button onclick="closeClientModal()" aria-label="Fechar dossiê do cliente" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-darkbg-700 active:scale-95">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
@@ -2362,25 +2388,25 @@
   </div>
 
   <!-- ================= MODAL: REGISTRAR ATA DE REUNIÃO ================= -->
-  <div id="notes-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="notes-modal" role="dialog" aria-modal="true" aria-labelledby="notes-modal-title" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg p-6 shadow-2xl space-y-4 animate-tab">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 id="notes-modal-title" class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
           <i data-lucide="clipboard-pen" class="w-4 h-4 text-brand-500"></i>
           <span>Registrar Ata da Reunião — <span id="notes-company-name">Empresa</span></span>
         </h3>
-        <button onclick="closeCallNotesModal()" class="p-1 text-slate-400 hover:text-white">
+        <button onclick="closeCallNotesModal()" aria-label="Fechar modal de ata da reunião" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Principais Pontos Discutidos:</label>
-          <textarea id="notes-content" rows="4" placeholder="Ex: Roberto aprovou o layout, solicitou apoio para importação de 500 colaboradores..." class="w-full p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-200 focus:outline-none focus:border-brand-500"></textarea>
+          <label for="notes-content" class="block font-semibold text-slate-300 mb-1">Principais Pontos Discutidos:</label>
+          <textarea id="notes-content" aria-label="Principais pontos discutidos na reunião" rows="4" placeholder="Ex: Roberto aprovou o layout, solicitou apoio para importação de 500 colaboradores..." class="w-full p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-200 focus:outline-none focus:border-brand-500"></textarea>
         </div>
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Próxima Ação / Compromisso:</label>
-          <input type="text" id="notes-next-action" placeholder="Ex: Enviar template de planilha até sexta às 12h" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-200 focus:outline-none focus:border-brand-500">
+          <label for="notes-next-action" class="block font-semibold text-slate-300 mb-1">Próxima Ação / Compromisso:</label>
+          <input type="text" id="notes-next-action" aria-label="Próxima ação ou compromisso acordado" placeholder="Ex: Enviar template de planilha até sexta às 12h" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-slate-200 focus:outline-none focus:border-brand-500">
         </div>
       </div>
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
@@ -2416,6 +2442,81 @@
     function esc(v) {
       return String(v ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
+
+    // ===== GERENCIADOR ACESSÍVEL DE MODAIS (WCAG 2.1 - CRITÉRIOS 2.1.2 & 2.4.3) =====
+    const ModalA11y = {
+      lastFocusedElement: null,
+      getOpenModal() {
+        const dialogs = document.querySelectorAll('[role="dialog"]:not(.hidden)');
+        for (const d of dialogs) {
+          if (d.id === 'auth-gate' && !document.body.classList.contains('auth-locked')) continue;
+          return d;
+        }
+        return null;
+      },
+      onModalOpened(modalId) {
+        this.lastFocusedElement = document.activeElement;
+        const modal = typeof modalId === 'string' ? document.getElementById(modalId) : modalId;
+        if (!modal) return;
+        requestAnimationFrame(() => {
+          const focusables = modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (focusables.length > 0) {
+            focusables[0].focus();
+          }
+        });
+      },
+      onModalClosed() {
+        if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
+          try { this.lastFocusedElement.focus(); } catch (e) {}
+        }
+      },
+      closeCurrentModal() {
+        const open = this.getOpenModal();
+        if (!open) return;
+        const id = open.id;
+        if (id === 'calendar-meeting-modal') closeMeetingDetailModal();
+        else if (id === 'master-auth-modal') closeMasterAuthModal();
+        else if (id === 'master-config-modal') closeMasterConfigModal();
+        else if (id === 'client-form-modal') closeClientFormModal();
+        else if (id === 'client-modal') closeClientModal();
+        else if (id === 'notes-modal') closeCallNotesModal();
+        else open.classList.add('hidden');
+        this.onModalClosed();
+      }
+    };
+
+    // Fechar modais ao teclar ESC e Focus Trap ao teclar Tab
+    document.addEventListener('keydown', (e) => {
+      const openModal = ModalA11y.getOpenModal();
+      if (!openModal) return;
+
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        e.preventDefault();
+        ModalA11y.closeCurrentModal();
+        return;
+      }
+
+      if (e.key === 'Tab' || e.keyCode === 9) {
+        const focusables = Array.from(openModal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+          .filter(el => el.offsetParent !== null);
+        if (focusables.length === 0) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    });
 
     let clients = JSON.parse(localStorage.getItem('pulsecs_clients')) || defaultClients;
     // Auto-migração para garantir phone, email, csmId e métricas de benefícios da Fase 2
@@ -3035,7 +3136,7 @@
           <div class="flex items-center justify-between pt-1 text-[11px]">
             <span class="${c.hs >= 75 ? 'text-emerald-400' : (c.hs >= 60 ? 'text-amber-400' : 'text-rose-400')} font-bold">HS: ${c.hs}</span>
             <div class="flex items-center gap-1">
-              <select onchange="moveClientPhase(${c.id}, this.value)" class="text-[10px] bg-slate-200 dark:bg-darkbg-800 border border-slate-700 rounded px-1 py-0.5 text-slate-300">
+              <select aria-label="Mudar fase do cliente ${esc(c.name)}" onchange="moveClientPhase(${c.id}, this.value)" class="text-[10px] bg-slate-200 dark:bg-darkbg-800 border border-slate-700 rounded px-1 py-0.5 text-slate-300">
                 <option value="Kickoff" ${c.phase === 'Kickoff' ? 'selected' : ''}>Kickoff</option>
                 <option value="Config & Carga" ${c.phase === 'Config & Carga' ? 'selected' : ''}>Config</option>
                 <option value="Treinamento" ${c.phase === 'Treinamento' ? 'selected' : ''}>Treino</option>
@@ -3081,6 +3182,7 @@
       document.getElementById('form-client-contact').value = '';
       document.getElementById('form-client-risk').value = 'Nenhum';
       document.getElementById('client-form-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('client-form-modal');
       lucide.createIcons();
     }
 
@@ -3098,11 +3200,13 @@
       document.getElementById('form-client-contact').value = c.contact;
       document.getElementById('form-client-risk').value = c.riskReason;
       document.getElementById('client-form-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('client-form-modal');
       lucide.createIcons();
     }
 
     function closeClientFormModal() {
       document.getElementById('client-form-modal').classList.add('hidden');
+      ModalA11y.onModalClosed();
     }
 
     function handleClientFormSubmit(e) {
@@ -3210,10 +3314,12 @@
       if (window.PulseData) PulseData.fillClientModal(c);
 
       document.getElementById('client-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('client-modal');
     }
 
     function closeClientModal() {
       document.getElementById('client-modal').classList.add('hidden');
+      ModalA11y.onModalClosed();
     }
 
     function openCallNotesModal(companyName) {
@@ -3222,10 +3328,12 @@
       document.getElementById('notes-content').value = '';
       document.getElementById('notes-next-action').value = '';
       document.getElementById('notes-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('notes-modal');
     }
 
     function closeCallNotesModal() {
       document.getElementById('notes-modal').classList.add('hidden');
+      ModalA11y.onModalClosed();
     }
 
     function saveCallNotes() {
@@ -3274,11 +3382,13 @@
       if (hint) hint.textContent = appConfig.passwordHash ? '' : 'Primeiro acesso: a senha digitada agora será a senha master (mín. 8 caracteres).';
       document.getElementById('input-master-password').value = '';
       document.getElementById('master-auth-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('master-auth-modal');
       document.getElementById('input-master-password').focus();
     }
 
     function closeMasterAuthModal() {
       document.getElementById('master-auth-modal').classList.add('hidden');
+      ModalA11y.onModalClosed();
     }
 
     async function handleMasterAuthSubmit(e) {
@@ -3316,11 +3426,13 @@
     function openMasterConfigModal() {
       syncConfigUI();
       document.getElementById('master-config-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('master-config-modal');
       lucide.createIcons();
     }
 
     function closeMasterConfigModal() {
       document.getElementById('master-config-modal').classList.add('hidden');
+      ModalA11y.onModalClosed();
     }
 
     function switchConfigSubTab(tabName) {
@@ -3690,7 +3802,14 @@
     // --- 14. COPILOT AI DRAWER (UNIVERSAL MULTI-MODEL) ---
     function toggleCopilotDrawer() {
       const drawer = document.getElementById('copilot-drawer');
+      const isOpening = drawer.classList.contains('translate-x-full');
       drawer.classList.toggle('translate-x-full');
+      if (isOpening) {
+        setTimeout(() => {
+          const input = document.getElementById('copilot-input');
+          if (input) input.focus();
+        }, 150);
+      }
       lucide.createIcons();
     }
 
@@ -4000,12 +4119,14 @@
       hsBadge.className = `text-sm font-bold ${evt.status === 'green' ? 'text-emerald-400' : (evt.status === 'yellow' ? 'text-amber-400' : 'text-rose-400')}`;
 
       document.getElementById('calendar-meeting-modal').classList.remove('hidden');
+      ModalA11y.onModalOpened('calendar-meeting-modal');
       lucide.createIcons();
     }
 
     function closeMeetingDetailModal() {
       document.getElementById('calendar-meeting-modal').classList.add('hidden');
       activeCalendarEventModal = null;
+      ModalA11y.onModalClosed();
     }
 
     function enterCurrentModalMeet() {
@@ -4356,7 +4477,7 @@
           </td>
           <td class="py-3 px-4 text-slate-300">${esc(c.phase)}</td>
           <td class="py-3 px-4">
-            <select onchange="reassignClient(${c.id}, this.value)" class="p-1.5 rounded-lg bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <select aria-label="Reatribuir CSM responsável por ${esc(c.name)}" onchange="reassignClient(${c.id}, this.value)" class="p-1.5 rounded-lg bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
               ${teamCSMs.map(t => `
                 <option value="${t.id}" ${t.id === c.csmId ? 'selected' : ''}>${esc(t.name)} (${esc(t.role.split('(')[0])})</option>
               `).join('')}

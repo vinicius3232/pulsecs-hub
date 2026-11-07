@@ -115,8 +115,8 @@
     grid.append(
       kpi('Receita em risco', money(t.mrrAtRisk), t.criticalCount ? 'MRR das ' + t.criticalCount + ' contas críticas' : 'Nenhuma conta crítica', t.mrrAtRisk ? 'text-rose-700 dark:text-rose-400' : undefined),
       kpi('Contas críticas', String(t.criticalCount), 'score abaixo de 50'),
-      kpi('Tarefas abertas', db ? String(t.openTasks) : '—', db ? t.criticalTasks + ' críticas' : 'as tarefas das automações aparecem com o banco conectado'),
-      kpi('Paradas há +' + PulseTodayPure.STALE_DAYS + ' dias', db ? String(t.staleTasks) : '—', db ? 'ações que ninguém concluiu' : 'requer o banco conectado', db && t.staleTasks ? 'text-amber-700 dark:text-amber-400' : undefined)
+      kpi('Tarefas abertas', db ? String(t.openTasks) : '0', db ? t.criticalTasks + ' críticas' : 'Modo demonstração: sem tarefas pendentes'),
+      kpi('Paradas há +' + PulseTodayPure.STALE_DAYS + ' dias', db ? String(t.staleTasks) : '0', db ? 'ações que ninguém concluiu' : 'Modo demonstração: nenhuma parada', db && t.staleTasks ? 'text-amber-700 dark:text-amber-400' : undefined)
     );
     host.appendChild(grid);
 
