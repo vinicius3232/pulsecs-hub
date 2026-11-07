@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { applyCors, bearerToken, getSupabaseUserId, rateLimited } from '../_lib/security.js';
+import { logStructured } from '../_lib/logger.js';
 import { drainEvents } from '../../src/lib/automation/drain.js';
 import { MANUAL_TRIGGER } from '../../src/lib/automation/engine.js';
 import { createSupabaseStore } from '../../src/lib/automation/supabase-store.js';
@@ -66,9 +67,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Processa na hora (sem esperar o cron diário)
     const summary = await drainEvents(admin, createSupabaseStore(admin), { limit: 20 });
+
+    logStructured({
+      level: 'info',
+      route: 'api/automation/run',
+      id: event.id,
+      message: 'Regra manual executada',
+      meta: { ruleId, companyId, drain: summary }
+    });
+
     return res.status(200).json({ status: 'executed', event_id: event.id, drain: summary });
   } catch (err) {
-    console.error('automation/run error', (err as Error)?.message);
+    logStructured({
+      level: 'error',
+      route: 'api/automation/run',
+      id: ruleId,
+      message: (err as Error)?.message || 'Falha ao executar regra'
+    });
     return res.status(500).json({ error: 'Run failed' });
   }
 }

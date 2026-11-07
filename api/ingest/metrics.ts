@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { bearerToken, rateLimited, safeEqual } from '../_lib/security.js';
+import { logStructured } from '../_lib/logger.js';
 import { parseBatch, parseMetricsItem } from '../../src/lib/ingest.js';
 
 /**
@@ -21,7 +22,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (await rateLimited(`ingest:${ip}`, 30, 60_000)) return res.status(429).json({ error: 'Too Many Requests' });
 
   const provided = String(req.headers['x-ingest-secret'] || '') || bearerToken(req);
-  if (!provided || !safeEqual(provided, secret)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!provided || !safeEqual(provided, secret)) {
+    logStructured({ level: 'warn', route: 'api/ingest/metrics', message: 'Tentativa de ingestão com segredo inválido' });
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   const url = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -90,6 +94,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   failed.sort((a, b) => a.index - b.index);
+
+  logStructured({
+    level: 'info',
+    route: 'api/ingest/metrics',
+    message: 'Lote de métricas processado',
+    meta: { received: batch.items.length, updated, failedCount: failed.length }
+  });
+
   // 200 mesmo com falhas parciais: quem envia lê "failed" para reenviar só o que faltou
   return res.status(200).json({ received: batch.items.length, updated, failed });
 }

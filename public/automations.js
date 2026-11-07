@@ -80,7 +80,17 @@
     };
   }
 
-  const pure = { triggerLabel, describeCondition, describeConditions, describeStep, describeSteps, mapRule, RUN_STATUS, TRIGGERS };
+  function formatDelaySec(seconds) {
+    const s = Number(seconds || 0);
+    if (s <= 0) return 'nenhum evento em fila';
+    if (s < 60) return s + 's';
+    if (s < 3600) return Math.floor(s / 60) + ' min';
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h + ' h ' + m + ' min';
+  }
+
+  const pure = { triggerLabel, describeCondition, describeConditions, describeStep, describeSteps, mapRule, RUN_STATUS, TRIGGERS, formatDelaySec };
   root.PulseAutomationsPure = pure;
   if (typeof module !== 'undefined' && module.exports) module.exports = pure;
   if (typeof document === 'undefined') return;
@@ -89,21 +99,30 @@
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
   const when = iso => { if (!iso) return 'nunca'; const d = new Date(iso); return Number.isNaN(d.getTime()) ? 'nunca' : d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); };
 
-  const state = { rules: [], runs: [], loaded: false, loading: false, error: null };
+  const state = { rules: [], runs: [], health: null, loaded: false, loading: false, error: null };
 
   async function load() {
     const sb = root.PulseAuth && root.PulseAuth.client;
     if (!sb) return;
+    const isHead = root.PulseAuth && root.PulseAuth.role && root.PulseAuth.role() === 'head';
     state.loading = true; state.error = null; render();
     try {
-      const [rules, runs] = await Promise.all([
+      const queries = [
         sb.from('automation_rules').select('*').order('name'),
         // A RLS só devolve execuções ao Head; para os demais a lista vem vazia
         sb.from('automation_rule_runs').select('id, rule_id, status, created_at').order('created_at', { ascending: false }).limit(20)
-      ]);
+      ];
+      if (isHead) {
+        queries.push(sb.rpc('fn_system_health'));
+      }
+      const res = await Promise.all(queries);
+      const rules = res[0];
+      const runs = res[1];
+      const healthRes = res[2];
       if (rules.error) throw new Error(rules.error.message);
       state.rules = (rules.data || []).map(mapRule);
       state.runs = runs.error ? [] : (runs.data || []);
+      state.health = (healthRes && !healthRes.error && healthRes.data) ? healthRes.data : null;
       state.loaded = true;
     } catch (e) {
       state.error = e.message;
@@ -201,6 +220,60 @@
     return card;
   }
 
+  function healthCard(health) {
+    if (!health) return null;
+    const box = el('div', 'mb-6 bg-white dark:bg-darkbg-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4');
+    const header = el('div', 'flex items-center justify-between');
+    header.appendChild(el('h3', 'font-bold text-sm text-slate-900 dark:text-white', 'Saúde do sistema'));
+
+    const isDegraded = (Number(health.dead_events) > 0) || (Number(health.pending_events) > 50) || (Number(health.oldest_pending_age_seconds) > 1800);
+    const badge = el('span', 'text-xs px-2.5 py-1 rounded-full font-semibold ' + 
+      (isDegraded ? 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'),
+      isDegraded ? 'Atenção necessária' : 'Fila saudável');
+    header.appendChild(badge);
+    box.appendChild(header);
+
+    const grid = el('div', 'grid grid-cols-2 sm:grid-cols-4 gap-3');
+
+    const m1 = el('div', 'p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700/60');
+    m1.append(el('div', 'text-xs text-slate-500 dark:text-slate-400', 'Eventos pendentes'),
+      el('div', 'text-lg font-bold text-slate-900 dark:text-white mt-1', String(health.pending_events || 0)));
+
+    const m2 = el('div', 'p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700/60');
+    m2.append(el('div', 'text-xs text-slate-500 dark:text-slate-400', 'Eventos mortos (dead)'),
+      el('div', 'text-lg font-bold ' + (Number(health.dead_events) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white') + ' mt-1', String(health.dead_events || 0)));
+
+    const m3 = el('div', 'p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700/60');
+    m3.append(el('div', 'text-xs text-slate-500 dark:text-slate-400', 'Atraso mais antigo'),
+      el('div', 'text-sm font-semibold text-slate-900 dark:text-white mt-1.5', formatDelaySec(health.oldest_pending_age_seconds)));
+
+    const m4 = el('div', 'p-3 rounded-xl bg-slate-50 dark:bg-darkbg-900 border border-slate-200 dark:border-slate-700/60');
+    m4.append(el('div', 'text-xs text-slate-500 dark:text-slate-400', 'Último cron'),
+      el('div', 'text-sm font-semibold text-slate-900 dark:text-white mt-1.5', when(health.last_cron_at)));
+
+    grid.append(m1, m2, m3, m4);
+    box.appendChild(grid);
+
+    const fails = Array.isArray(health.recent_failed_runs) ? health.recent_failed_runs : [];
+    if (fails.length > 0) {
+      const failBox = el('div', 'pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2');
+      failBox.appendChild(el('div', 'text-xs font-semibold text-rose-700 dark:text-rose-400', 'Últimas falhas de execução:'));
+      const ul = el('ul', 'divide-y divide-slate-100 dark:divide-slate-800 text-xs');
+      for (const f of fails) {
+        const li = el('li', 'py-1.5 flex items-center justify-between gap-2');
+        li.append(
+          el('span', 'text-slate-800 dark:text-slate-200 font-medium', f.rule_name || 'Regra'),
+          el('span', 'text-slate-500 dark:text-slate-400 text-[11px]', when(f.created_at))
+        );
+        ul.appendChild(li);
+      }
+      failBox.appendChild(ul);
+      box.appendChild(failBox);
+    }
+
+    return box;
+  }
+
   function render() {
     const host = document.getElementById('automations-content');
     if (!host) return;
@@ -217,6 +290,9 @@
       host.appendChild(p); return;
     }
     const isHead = root.PulseAuth.role() === 'head';
+    if (isHead && state.health) {
+      host.appendChild(healthCard(state.health));
+    }
     if (isHead) {
       const topBar = el('div', 'flex items-center justify-between mb-4');
       topBar.appendChild(el('span', 'text-xs text-slate-500 dark:text-slate-400', state.rules.length + ' regras configuradas'));
@@ -255,5 +331,5 @@
     if (root.PulseData && root.PulseData.mode === 'db' && !state.loaded && !state.loading) load();
     else render();
   };
-  root.resetAutomations = function () { state.loaded = false; state.rules = []; state.runs = []; };
+  root.resetAutomations = function () { state.loaded = false; state.rules = []; state.runs = []; state.health = null; };
 })(typeof window !== 'undefined' ? window : globalThis);

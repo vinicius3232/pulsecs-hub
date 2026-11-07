@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { bearerToken, rateLimited, safeEqual } from './_lib/security.js';
+import { logStructured } from './_lib/logger.js';
 import { parseDeal, processDeal, type SalezDb } from '../src/lib/salez.js';
 
 const PG_UNIQUE_VIOLATION = '23505';
@@ -23,7 +24,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (await rateLimited(`salez:${ip(req)}`, 60, 60_000)) return res.status(429).json({ error: 'Too Many Requests' });
 
   const provided = String(req.headers['x-webhook-secret'] || '') || bearerToken(req);
-  if (!provided || !safeEqual(provided, secret)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!provided || !safeEqual(provided, secret)) {
+    logStructured({ level: 'warn', route: 'api/salez-webhook', message: 'Tentativa de acesso com segredo inválido' });
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   const url = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -60,12 +64,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const result = await processDeal(db, parsed.deal);
-    // Não registra dados pessoais (telefone/e-mail) nos logs
-    console.log('Salez deal', result.status, result.status === 'created' ? result.companyId : '');
+    logStructured({
+      level: 'info',
+      route: 'api/salez-webhook',
+      id: result.status === 'created' ? result.companyId : undefined,
+      message: 'Entrega de webhook processada',
+      meta: { status: result.status }
+    });
     return res.status(200).json(result.status === 'created' ? { status: 'success', company_id: result.companyId } : { status: 'duplicate' });
   } catch (err) {
-    console.error('Salez webhook error', (err as Error)?.message);
-    // 500: a entrega foi liberada, a Salez pode reenviar
+    logStructured({
+      level: 'error',
+      route: 'api/salez-webhook',
+      message: (err as Error)?.message || 'Erro ao processar webhook Salez'
+    });
     return res.status(500).json({ error: 'Webhook Processing Error' });
   }
 }
