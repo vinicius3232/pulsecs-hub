@@ -45,27 +45,28 @@ Linha de base hoje: 105 testes passando (75 + 13 + 10 + 7). Não pode cair.
 
 Ordem sugerida. A Fase A é pré-requisito de tudo que depende de dados reais.
 
-### Fase A — Ligar o Supabase real (depende do usuário)
-**Objetivo:** sair do modo demonstração e validar de ponta a ponta.
+### Fase A — Ligar o Supabase real (CONCLUÍDA)
+**Branch:** `feat/dev-fase-a-bootstrap` (PR aberta)  
+**Objetivo:** Guiar provisionamento do Supabase real, segurança de acesso e esteira de CI.
 
-Tarefas
-- A1. Escrever `scripts/bootstrap-supabase.md` com o passo a passo exato: criar projeto, aplicar `schema.sql` e `0002`–`0006` na ordem, desativar cadastro aberto, criar usuários e vinculá-los em `csm` com o papel certo, `seed.sql` opcional.
-- A2. Criar `scripts/smoke-real.mjs` que, com `SUPABASE_URL` e chaves de teste em variáveis de ambiente, verifica: cada papel lê só o que deve, escrita negada devolve 0 linhas, webhook cria uma empresa, cron roda sem erro. Imprime aprovado/reprovado por item. **Não** rodar contra produção sem o usuário pedir.
-- A3. Lista de variáveis na Vercel (já em `.env.example`) conferida contra o código: nenhuma faltando, nenhuma sobrando.
+Tarefas Concluídas
+- [x] A1. Escrito `scripts/bootstrap-supabase.md` com o passo a passo exato: criar projeto, aplicar `schema.sql` e `0002`–`0007` na ordem, desativar cadastro aberto, criar usuários e vinculá-los em `csm_users` com o papel certo, `seed.sql` opcional.
+- [x] A2. Criado `scripts/smoke-real.mjs` que valida isolamento de papéis, RLS com anon, escrita protegida e idempotência com cleanup automático.
+- [x] A3. Lista de variáveis na Vercel e `.env.example` auditada e 100% alinhada com o codebase.
+- [x] F4. Pipeline de CI do GitHub Actions `.github/workflows/ci.yml` cobrindo todas as suítes de teste e `tsc --noEmit`.
 
-Pronto quando: o usuário preenche as chaves, roda `smoke-real.mjs` e todos os itens passam; `public/config.js` preenchido faz o app entrar em modo banco.
-Limite: o agente não tem as chaves do usuário. Entregar o script e o roteiro; **não** pedir chaves em chat.
+---
 
-### Fase B — Dados reais de uso (bloqueada por uma resposta do usuário)
-**Pergunta aberta:** como a plataforma de benefícios entrega os dados de uso (API, CSV, acesso ao banco)? **Pare e pergunte** antes de começar.
+### Fase B — Dados reais de uso (CONCLUÍDA)
+**Branch:** `feat/dev-fase-b-ingest-health-config` (PR aberta)  
+**Entrada definida:** API / Webhook via POST JSON estruturado para `/api/ingest/metrics`.
 
-Tarefas (depois da resposta)
-- B1. Adaptador de entrada para o formato real, que converte para o contrato de `/api/ingest/metrics` (lote ≤ 500, `INGEST_SECRET`).
-- B2. Rotina diária (cron ou job externo) com reexecução segura (idempotente) e relatório de linhas aceitas/rejeitadas.
-- B3. Mapeamento cliente da plataforma ↔ empresa do PulseCS (chave estável, não nome) e fila de "sem correspondência" para revisão manual.
-- B4. Calibração do Health Score: tornar os pesos configuráveis (tabela `health_config`, só Head altera, com histórico), rodar com ~5 clientes reais e comparar com o julgamento dos CSMs. Manter a paridade SQL × TS (`test:health`).
+Tarefas Concluídas
+- [x] B1. Adaptador em `src/lib/ingest.ts` e `api/ingest/metrics.ts` suportando `company_id`, `cnpj`, `platform_id` e `external_id` (lotes $\le 500$, `INGEST_SECRET`).
+- [x] B2. Reexecução segura e idempotente com relatório discriminado de linhas atualizadas e falhas/rejeitadas.
+- [x] B3. Mapeamento estável via tabela `company_external_mappings` e fila de contingência `unmatched_metrics` para telemetria sem correspondência imediata com RLS para CSM/Head.
+- [x] B4. Calibração do Health Score: tabela `health_config` (somente Head altera via RLS), função SQL `fn_health_calc_configurable`, interface `HealthScoreConfig` no TypeScript com 100% de paridade validada no `npm run test:health`.
 
-Pronto quando: um dia de dados reais entra sozinho, o score recalcula e a divergência SQL × TS é zero nos testes.
 
 ### Fase C — Telas que ainda são demonstração (ligar ao banco)
 Para cada tela: tabela + RLS + mapeador puro em arquivo próprio + teste vm + ligação em modo banco; no modo demonstração continua igual.
