@@ -10,7 +10,10 @@ export interface MetricsPatch {
   last_login_at?: string;
 }
 
-export type Target = { kind: 'id'; value: string } | { kind: 'cnpj'; value: string };
+export type Target =
+  | { kind: 'id'; value: string }
+  | { kind: 'cnpj'; value: string }
+  | { kind: 'platform_id'; value: string };
 
 export type Parsed =
   | { ok: true; target: Target; patch: MetricsPatch }
@@ -39,8 +42,13 @@ export function parseMetricsItem(raw: unknown, now: Date = new Date()): Parsed {
     const digits = r.cnpj.replace(/\D/g, '');
     if (digits.length !== 14) return { ok: false, reason: 'cnpj deve ter 14 dígitos' };
     target = { kind: 'cnpj', value: digits };
+  } else if (typeof r.platform_id === 'string' || typeof r.external_id === 'string') {
+    const rawVal = typeof r.platform_id === 'string' ? r.platform_id : (r.external_id as string);
+    const val = rawVal.trim();
+    if (!val || val.length > 128) return { ok: false, reason: 'platform_id deve ter entre 1 e 128 caracteres' };
+    target = { kind: 'platform_id', value: val };
   } else {
-    return { ok: false, reason: 'informe company_id ou cnpj' };
+    return { ok: false, reason: 'informe company_id, cnpj ou platform_id' };
   }
 
   const patch: MetricsPatch = {};

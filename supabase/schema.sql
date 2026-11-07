@@ -170,3 +170,52 @@ CREATE POLICY "Interactions access policy" ON public.interactions
 
 CREATE POLICY "Snapshots access policy" ON public.health_snapshots
   FOR ALL TO authenticated USING (true);
+
+-- 7. TABELA: company_external_mappings (Fase B)
+CREATE TABLE IF NOT EXISTS public.company_external_mappings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+  platform_name TEXT NOT NULL DEFAULT 'benefits_platform',
+  external_platform_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by UUID REFERENCES public.csm_users(id) ON DELETE SET NULL,
+  CONSTRAINT uq_platform_external_id UNIQUE (platform_name, external_platform_id)
+);
+
+-- 8. TABELA: unmatched_metrics (Fase B)
+CREATE TABLE IF NOT EXISTS public.unmatched_metrics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  platform_name TEXT NOT NULL DEFAULT 'benefits_platform',
+  platform_id TEXT,
+  cnpj TEXT,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  reason TEXT NOT NULL,
+  resolved BOOLEAN NOT NULL DEFAULT FALSE,
+  resolved_to_company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
+  resolved_at TIMESTAMPTZ,
+  resolved_by UUID REFERENCES public.csm_users(id) ON DELETE SET NULL,
+  hits INT NOT NULL DEFAULT 1,              -- reenvios da mesma pendência (0008)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Políticas, funções (fn_enqueue/resolve/purge_unmatched) e a calibração ativa vêm das migrations 0007 e 0008.
+
+-- 9. TABELA: health_config (Fase B)
+CREATE TABLE IF NOT EXISTS public.health_config (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  weight_activation NUMERIC(4,3) NOT NULL DEFAULT 0.35 CHECK (weight_activation >= 0),
+  weight_mau NUMERIC(4,3) NOT NULL DEFAULT 0.25 CHECK (weight_mau >= 0),
+  weight_rh NUMERIC(4,3) NOT NULL DEFAULT 0.15 CHECK (weight_rh >= 0),
+  weight_renewal NUMERIC(4,3) NOT NULL DEFAULT 0.15 CHECK (weight_renewal >= 0),
+  weight_nps NUMERIC(4,3) NOT NULL DEFAULT 0.10 CHECK (weight_nps >= 0),
+  penalty_overdue INT NOT NULL DEFAULT 25 CHECK (penalty_overdue >= 0),
+  threshold_green INT NOT NULL DEFAULT 75 CHECK (threshold_green BETWEEN 1 AND 100),
+  threshold_yellow INT NOT NULL DEFAULT 50 CHECK (threshold_yellow BETWEEN 0 AND threshold_green),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by UUID REFERENCES public.csm_users(id) ON DELETE SET NULL,
+  CONSTRAINT health_config_weights_sum CHECK (
+    abs((weight_activation + weight_mau + weight_rh + weight_renewal + weight_nps) - 1.0) < 0.005
+  )
+);
+
