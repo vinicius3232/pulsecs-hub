@@ -101,6 +101,7 @@
       hs: Number(row.health_score) || 0,
       status: ['green', 'yellow', 'red'].includes(row.health_status) ? row.health_status : 'yellow',
       lastLogin: fmtLogin(row.last_login_at, now),
+      loginDays: loginDaysOf(row.last_login_at, now),
       contact: contactString(contact),
       phase: PHASES.includes(row.phase) ? row.phase : 'Kickoff',
       riskReason: row.risk_reason || 'Nenhum',
@@ -251,7 +252,68 @@
     };
   }
 
+  // ---------------------------------------------------------------- sinais da carteira (tela inicial)
+  const CONTACT_CHANNELS = ['whatsapp', 'email', 'call', 'salez_agent']; // nota/automação não conta como contato com o cliente
+  const startOfDay = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+
+  /** Dias desde o último login do admin (null = nunca logou). */
+  function loginDaysOf(iso, now) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return Math.max(0, Math.round((startOfDay(now || new Date()) - startOfDay(d)) / 86400000));
+  }
+
+  /** interactions (company_id, channel, sent_at) -> Map(company_id -> { at, days }) só com contatos reais. */
+  function latestContacts(rows, now) {
+    now = now || new Date();
+    const out = new Map();
+    for (const r of rows || []) {
+      if (!r || !r.company_id || CONTACT_CHANNELS.indexOf(r.channel) === -1) continue;
+      const t = new Date(r.sent_at).getTime();
+      if (Number.isNaN(t)) continue;
+      const cur = out.get(r.company_id);
+      if (!cur || t > new Date(cur.at).getTime()) {
+        out.set(r.company_id, { at: new Date(t).toISOString(), days: Math.max(0, Math.round((startOfDay(now) - startOfDay(new Date(t))) / 86400000)) });
+      }
+    }
+    return out;
+  }
+
+  /** health_snapshots (company_id, activation_rate, recorded_at) -> Map(company_id -> % de variação da ativação, ou null). */
+  function growthByCompany(rows) {
+    const by = new Map();
+    for (const r of rows || []) {
+      if (!r || !r.company_id) continue;
+      const v = Number(r.activation_rate);
+      if (!Number.isFinite(v)) continue;
+      if (!by.has(r.company_id)) by.set(r.company_id, []);
+      by.get(r.company_id).push({ t: String(r.recorded_at), v });
+    }
+    const out = new Map();
+    for (const [id, list] of by) {
+      list.sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+      const first = list[0].v, last = list[list.length - 1].v;
+      out.set(id, list.length >= 2 && first > 0 ? Math.round(((last - first) / first) * 100) : null);
+    }
+    return out;
+  }
+
+  /** Grava nos clientes da tela: último contato, contato no mês corrente e crescimento. */
+  function applyHomeSignals(list, contacts, growth, now) {
+    now = now || new Date();
+    for (const c of list) {
+      const k = contacts && contacts.get(c.uuid);
+      c.lastContactAt = k ? k.at : null;
+      c.lastContactDays = k ? k.days : null;
+      const d = k ? new Date(k.at) : null;
+      c.contactedThisMonth = !!d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      c.growthPct = growth && growth.has(c.uuid) ? growth.get(c.uuid) : null;
+    }
+  }
+
   const pure = {
+    CONTACT_CHANNELS, loginDaysOf, latestContacts, growthByCompany, applyHomeSignals,
     mapInteraction,
     mapTask, derivedKpis, monthlyTrend,
     numId, uuidFor, fmtLogin, contactString, parseContact, daysUntil, renewalStage,
@@ -312,7 +374,13 @@
       for (const [name, r] of [['equipe', csm], ['empresas', comp], ['contatos', cont], ['reuniões', meet], ['tarefas', task]]) {
         if (r.error) throw new Error(name + ': ' + r.error.message);
       }
-      return { csm: csm.data || [], comp: comp.data || [], cont: cont.data || [], meet: meet.data || [], task: task.data || [] };
+      const since = n => new Date(Date.now() - n * 86400000).toISOString();
+      const optional = async fn => { try { const r = await fn(); return r && !r.error ? (r.data || []) : []; } catch (e) { return []; } };
+      const [inter, snaps] = await Promise.all([
+        optional(() => sb.from('interactions').select('company_id,channel,sent_at').gte('sent_at', since(70)).order('sent_at', { ascending: false }).limit(5000)),
+        optional(() => sb.from('health_snapshots').select('company_id,activation_rate,recorded_at').gte('recorded_at', since(45).slice(0, 10)).order('recorded_at', { ascending: true }).limit(5000))
+      ]);
+      return { csm: csm.data || [], comp: comp.data || [], cont: cont.data || [], meet: meet.data || [], task: task.data || [], inter, snaps };
     }
 
     function applyData(d) {
@@ -329,6 +397,7 @@
 
       const mapped = d.comp.map(r => mapCompany(r, primary.get(r.id), now));
       clients = mapped;
+      applyHomeSignals(mapped, latestContacts(d.inter, now), growthByCompany(d.snaps), now);
       const byUuid = new Map(mapped.map(c => [c.uuid, c]));
       calendarEvents = d.meet.map(r => mapMeeting(r, byUuid.get(r.company_id), primary.get(r.company_id)));
 
@@ -618,6 +687,10 @@
         channel, trigger_type: trigger, content: String(content).slice(0, 2000), status: 'sent'
       });
       if (error && root.showToast) root.showToast('Não foi possível registrar o contato: ' + error.message, 'error');
+      if (!error && CONTACT_CHANNELS.indexOf(channel) !== -1) {
+        client.lastContactAt = new Date().toISOString(); client.lastContactDays = 0; client.contactedThisMonth = true;
+        if (root.renderTodayTab) root.renderTodayTab();
+      }
     };
   }
 
