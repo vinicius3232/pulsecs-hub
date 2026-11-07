@@ -15,6 +15,7 @@ function memStore(rules: RuleRow[], company: Record<string, unknown> | null) {
   const scheduled: Array<NewScheduledStep & { id: string; status: string; attempts: number }> = [];
   const finished: Array<{ id: string; status: string; error?: string }> = [];
   const retried: Array<{ id: string; resumeAt: string }> = [];
+  const stepClaims = new Set<string>();
   let companyNow = company;
 
   const store: AutomationStore = {
@@ -27,6 +28,13 @@ function memStore(rules: RuleRow[], company: Record<string, unknown> | null) {
       return 'created';
     },
     async addNote(n) { notes.push(n); },
+    async claimStepIdempotency(claim) {
+      const key = `${claim.ruleId}:${claim.eventId}:${claim.stepKey}`;
+      if (stepClaims.has(key)) return 'duplicate';
+      stepClaims.add(key);
+      return 'claimed';
+    },
+    async completeStepIdempotency(_ruleId, _eventId, _stepKey) {},
     async recordRun(run) { runs.set(`${run.ruleId}:${run.eventId}`, { status: run.status, actions: run.actions.map(a => ({ ...a })) }); },
     async getRunActions(ruleId, eventId) { return (runs.get(`${ruleId}:${eventId}`)?.actions ?? []).map(a => ({ ...a })); },
     async scheduleResume(s) {
@@ -355,7 +363,7 @@ test('RECUPERAÇÃO: queda logo depois de agendar um delay não duplica a espera
   assert.equal(m.runs.get('r3:crash2')?.status, 'waiting');
 });
 
-test('RECUPERAÇÃO: queda ao concluir uma espera: tarefa não duplica; passos sem idempotência podem repetir (limitação conhecida)', async () => {
+test('RECUPERAÇÃO: queda ao concluir uma espera: entrega exatamente uma vez para add_note (não repete no reprocesso)', async () => {
   const rule: RuleRow = { id: 'r9', name: 'x', conditions: [], actions: [
     { type: 'delay', config: { days: 1 } },
     { type: 'create_task', config: { title: 'checar' } },
@@ -372,6 +380,44 @@ test('RECUPERAÇÃO: queda ao concluir uma espera: tarefa não duplica; passos s
   const s2 = await drainScheduled(m.store, { now: () => 0 });
   assert.equal(s2.resumed, 1);
   assert.equal(m.tasks.length, 1);          // dedupe da tarefa
-  assert.equal(m.notes.length, 2);          // at-least-once: a nota repete (add_note não é idempotente)
+  assert.equal(m.notes.length, 1);          // exatamente-uma-vez: a nota NÃO duplica mais
   assert.equal(m.runs.get('r9:e9')?.status, 'success');
+});
+
+test('RECUPERAÇÃO: http_request envia Idempotency-Key e não duplica envio em queda na retomada', async () => {
+  const calls: Array<{ url: string; headers: Record<string, string> }> = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async (u: unknown, init?: RequestInit) => {
+    calls.push({ url: String(u), headers: (init?.headers ?? {}) as Record<string, string> });
+    return new Response('ok', { status: 200 });
+  }) as typeof fetch;
+  process.env.AUTOMATION_HTTP_ALLOWLIST = 'api.destino.com';
+
+  try {
+    const rule: RuleRow = { id: 'r10', name: 'webhook_com_espera', conditions: [], actions: [
+      { type: 'delay', config: { days: 1 } },
+      { type: 'http_request', config: { url: 'https://api.destino.com/webhook', method: 'POST', body: { a: 1 } } }
+    ] };
+    const m = memStore([rule], acme);
+    await runAutomationForEvent(m.store, event({ id: 'e10' }), { now: () => 0 });
+
+    // Simula queda ao confirmar a retomada
+    const original = m.store.finishScheduled;
+    let caiu = false;
+    m.store.finishScheduled = async (...args) => { if (!caiu) { caiu = true; throw new Error('queda de rede após envio'); } return original(...args); };
+    await drainScheduled(m.store, { now: () => 0 });
+
+    // 1ª chamada saiu com o header Idempotency-Key
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].headers['Idempotency-Key'], 'r10:e10:1');
+
+    // Retomada / reprocessamento após queda
+    await drainScheduled(m.store, { now: () => 0 });
+    // Prova que o reprocesso NÃO disparou novo fetch (deduplicado pela chave local)
+    assert.equal(calls.length, 1);
+    assert.equal(m.runs.get('r10:e10')?.status, 'success');
+  } finally {
+    globalThis.fetch = realFetch;
+    delete process.env.AUTOMATION_HTTP_ALLOWLIST;
+  }
 });

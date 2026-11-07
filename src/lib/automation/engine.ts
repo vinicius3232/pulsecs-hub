@@ -56,8 +56,15 @@ async function runSteps(
       return 'waiting';
     }
 
-    if (step.type === 'if') results.push(...(await runIf(step, ctx)));
-    else results.push(await runAction(step, ctx));
+    const stepKey = String(i);
+    const stepCtx: ActionCtx = {
+      ...ctx,
+      stepKey,
+      idempotencyKey: `${ctx.rule.id}:${ctx.event.id}:${stepKey}`
+    };
+
+    if (step.type === 'if') results.push(...(await runIf(step, stepCtx)));
+    else results.push(await runAction(step, stepCtx));
   }
   return 'finished';
 }

@@ -6,6 +6,8 @@ export interface ActionCtx {
   rule: RuleRow;
   event: EventRow;
   context: Record<string, unknown>;
+  stepKey?: string;
+  idempotencyKey?: string;
 }
 
 export interface ActionExecutor {
@@ -56,16 +58,36 @@ export const createTaskAction: ActionExecutor = {
 /** Registra uma nota na linha do tempo do cliente (tabela interactions, canal "note"). */
 export const addNoteAction: ActionExecutor = {
   type: 'add_note',
-  async execute({ store, context }, config) {
+  async execute(ctx, config) {
+    const { store, context, rule, event, stepKey } = ctx;
     const company = context.company as { id?: string; csm_id?: string | null } | undefined;
     if (!company?.id) return { type: 'add_note', status: 'skipped', detail: 'sem_empresa_no_evento' };
     const raw = typeof config.content === 'string' ? config.content : '';
     if (!raw.trim()) return { type: 'add_note', status: 'failed', detail: 'conteudo_obrigatorio' };
+
+    // Idempotência exata: reserva a chave no banco/store ANTES do efeito
+    if (stepKey && store.claimStepIdempotency) {
+      const claim = await store.claimStepIdempotency({
+        ruleId: rule.id,
+        eventId: event.id,
+        stepKey,
+        actionType: 'add_note'
+      });
+      if (claim === 'duplicate') {
+        return { type: 'add_note', status: 'duplicate', detail: 'passo_ja_executado' };
+      }
+    }
+
     await store.addNote({
       companyId: company.id,
       csmId: company.csm_id ?? null,
       content: interpolate(raw, context).slice(0, 2000)
     });
+
+    if (stepKey && store.completeStepIdempotency) {
+      await store.completeStepIdempotency(rule.id, event.id, stepKey);
+    }
+
     return { type: 'add_note', status: 'done' };
   }
 };
@@ -84,10 +106,19 @@ export function allowedHttpHosts(): string[] {
  * Chamada HTTP de saída. Defesa contra SSRF: HTTPS, sem credenciais na URL, sem IP literal
  * nem localhost, e o host precisa estar na allowlist (falha fechada se vazia).
  * Não segue redirecionamentos e não guarda o corpo da resposta.
+ *
+ * IDEMPOTÊNCIA (D3):
+ * - Reserva a chave de idempotência antes de disparar o fetch. Se o passo já foi executado,
+ *   não dispara novamente (retorna 'duplicate').
+ * - Envia a chave também no cabeçalho 'Idempotency-Key' para que o servidor destino deduplique.
+ * - LIMITAÇÃO CONHECIDA: Se o processo ou rede cair durante a transmissão e o servidor de destino
+ *   não possuir suporte a processamento de 'Idempotency-Key', o efeito no destino poderá ter
+ *   sido executado sem confirmação. O PulseCS garante que não reenviará o pedido localmente.
  */
 export const httpRequestAction: ActionExecutor = {
   type: 'http_request',
-  async execute({ context }, config) {
+  async execute(ctx, config) {
+    const { store, rule, event, context, stepKey, idempotencyKey } = ctx;
     const rawUrl = typeof config.url === 'string' ? interpolate(config.url, context) : '';
     let url: URL;
     try {
@@ -105,20 +136,43 @@ export const httpRequestAction: ActionExecutor = {
       return { type: 'http_request', status: 'failed', detail: 'host_fora_da_allowlist' };
     }
 
+    // Idempotência exata: reserva a chave antes do efeito de rede
+    if (stepKey && store.claimStepIdempotency) {
+      const claim = await store.claimStepIdempotency({
+        ruleId: rule.id,
+        eventId: event.id,
+        stepKey,
+        actionType: 'http_request'
+      });
+      if (claim === 'duplicate') {
+        return { type: 'http_request', status: 'duplicate', detail: 'passo_ja_executado' };
+      }
+    }
+
     const method = config.method === 'GET' ? 'GET' : 'POST';
     let body: string | undefined;
     if (method === 'POST') {
       const b = config.body;
       body = typeof b === 'string' ? interpolate(b, context) : JSON.stringify(b ?? { company: context.company ?? null, event: context.event });
     }
+
+    const headers: Record<string, string> = {};
+    if (body) headers['Content-Type'] = 'application/json';
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+
     try {
       const res = await fetch(url, {
         method,
         redirect: 'manual',
         signal: AbortSignal.timeout(8000),
-        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        headers: Object.keys(headers).length ? headers : undefined,
         body
       });
+
+      if (stepKey && store.completeStepIdempotency) {
+        await store.completeStepIdempotency(rule.id, event.id, stepKey);
+      }
+
       return { type: 'http_request', status: res.ok ? 'done' : 'failed', detail: `http_${res.status}` };
     } catch (err) {
       return { type: 'http_request', status: 'failed', detail: (err as Error)?.name === 'TimeoutError' ? 'timeout' : 'erro_de_rede' };
@@ -151,15 +205,22 @@ const MAX_BRANCH_DEPTH = 5;
  * Executa os passos de um ramo do `if` (recursivo). `delay` não é permitido aqui:
  * a retomada precisa de um ponto único na lista raiz.
  */
-export async function runBranch(steps: ActionSpec[], ctx: ActionCtx, depth = 0): Promise<ActionResult[]> {
+export async function runBranch(steps: ActionSpec[], ctx: ActionCtx, depth = 0, branchName = 'branch'): Promise<ActionResult[]> {
   const out: ActionResult[] = [];
-  for (const step of steps) {
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    const subKey = `${ctx.stepKey || '0'}.${branchName}.${i}`;
+    const subCtx: ActionCtx = {
+      ...ctx,
+      stepKey: subKey,
+      idempotencyKey: `${ctx.rule.id}:${ctx.event.id}:${subKey}`
+    };
     if (step.type === 'delay') {
       out.push({ type: 'delay', status: 'failed', detail: 'delay_nao_permitido_em_ramo' });
     } else if (step.type === 'if') {
-      out.push(...(await runIf(step, ctx, depth + 1)));
+      out.push(...(await runIf(step, subCtx, depth + 1)));
     } else {
-      out.push(await runAction(step, ctx));
+      out.push(await runAction(step, subCtx));
     }
   }
   return out;
@@ -170,7 +231,8 @@ export async function runIf(step: ActionSpec, ctx: ActionCtx, depth = 0): Promis
   const cfg = (step.config ?? {}) as { conditions?: RuleCondition[]; then?: ActionSpec[]; else?: ActionSpec[] };
   const ok = evaluateConditions(Array.isArray(cfg.conditions) ? cfg.conditions : [], ctx.context);
   const branch = ok ? cfg.then : cfg.else;
-  const results: ActionResult[] = [{ type: 'if', status: 'done', detail: ok ? 'then' : 'else' }];
-  if (Array.isArray(branch) && branch.length) results.push(...(await runBranch(branch, ctx, depth)));
+  const branchName = ok ? 'then' : 'else';
+  const results: ActionResult[] = [{ type: 'if', status: 'done', detail: branchName }];
+  if (Array.isArray(branch) && branch.length) results.push(...(await runBranch(branch, ctx, depth, branchName)));
   return results;
 }

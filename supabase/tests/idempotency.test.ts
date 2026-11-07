@@ -25,7 +25,7 @@ before(async () => {
                  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;`);
   await db.exec(sql('schema.sql').replace(/^.*uuid-ossp.*$/m, ''));
   for (const f of ['0002_event_log_automation', '0003_workflow_steps_and_views']) await db.exec(sql(`migrations/${f}.sql`));
-  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0006_webhook_idempotency', '0006_webhook_idempotency']) await db.exec(sql(`migrations/${f}.sql`)); // 0006 idempotente
+  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0006_webhook_idempotency', '0006_webhook_idempotency', '0007_external_mappings_and_health_config', '0008_health_config_wiring_and_unmatched_queue', '0009_step_idempotency', '0009_step_idempotency']) await db.exec(sql(`migrations/${f}.sql`)); // migrations idempotentes
   await db.exec(`insert into auth.users(id) values ('${U}'); insert into csm_users(auth_id,name,email,role) values ('${U}','H','h@x.com','head')`);
 });
 
@@ -101,4 +101,33 @@ test('evento de tempo: o mesmo fato (renovação/bucket) não entra duas vezes m
   const n2 = (await as('service', `select public.fn_emit_time_events() as n`)).rows[0].n;
   assert.ok(n1 >= 1);
   assert.equal(n2, 0);
+});
+
+test('automation_step_idempotency: mesma chave por (execução, passo) não duplica (UNIQUE)', async () => {
+  const co = (await as('service', `insert into companies(name) values ('StepIdem') returning id`)).rows[0].id;
+  const rule = (await as('service', `insert into automation_rules(name, trigger_event) values ('r-step','company.created') returning id`)).rows[0].id;
+  const ev = (await as('service', `insert into event_log(event_type, entity_kind, company_id) values ('company.created','company','${co}') returning id`)).rows[0].id;
+
+  const ins = (stepKey: string, key: string) =>
+    `insert into automation_step_idempotency(rule_id, event_id, step_key, idempotency_key, action_type) values ('${rule}','${ev}','${stepKey}','${key}','add_note')`;
+
+  assert.equal((await as('service', ins('0', 'k1'))).error, null);
+  // Segunda tentativa com a mesma chave ou mesmo passo leva erro de UNIQUE
+  const dupKey = await as('service', ins('1', 'k1'));
+  assert.match(dupKey.error ?? '', /unique|duplicate/i);
+  const dupStep = await as('service', ins('0', 'k2'));
+  assert.match(dupStep.error ?? '', /unique|duplicate/i);
+
+  // Apenas service role acessa; anon e head são negados
+  for (const who of ['anon', 'head'] as const) {
+    assert.ok((await as(who, `select * from automation_step_idempotency`)).error, who + ' leu');
+    assert.ok((await as(who, ins('2', 'k3'))).error, who + ' inseriu');
+  }
+
+  // Retenção: purge apaga registros antigos
+  await db.exec(`insert into automation_step_idempotency(rule_id, event_id, step_key, idempotency_key, action_type, created_at)
+    values ('${rule}','${ev}','old','k-old','add_note', now() - interval '120 days')`);
+  assert.ok((await as('head', `select public.fn_purge_step_idempotency(90)`)).error);
+  const purged = await as('service', `select public.fn_purge_step_idempotency(90) as n`);
+  assert.equal(purged.rows[0].n, 1);
 });
