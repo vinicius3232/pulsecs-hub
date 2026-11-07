@@ -195,3 +195,63 @@ test('mapInteraction: rótulos em português, texto limitado e dados ausentes', 
   const v = P.mapInteraction({ id: 'i2', channel: 'carrier_pigeon', trigger_type: 'custom_x', content: null });
   assert.equal(v.channel, 'carrier_pigeon'); assert.equal(v.trigger, 'custom_x'); assert.equal(v.content, ''); assert.equal(v.when, null);
 });
+
+// ---------------------------------------------------------------- sinais da tela inicial
+const NOW = new Date(2026, 10, 15, 12, 0, 0); // 15/11/2026 (horário local)
+const iso = (y, m, d, h = 10) => new Date(y, m, d, h, 0, 0).toISOString();
+
+test('loginDaysOf: dias desde o login; nunca logou e data inválida = null', () => {
+  assert.equal(P.loginDaysOf(iso(2026, 10, 15, 8), NOW), 0);
+  assert.equal(P.loginDaysOf(iso(2026, 10, 12), NOW), 3);
+  assert.equal(P.loginDaysOf(null, NOW), null); assert.equal(P.loginDaysOf('lixo', NOW), null);
+  assert.equal(P.loginDaysOf(iso(2026, 10, 20), NOW), 0); // futuro não vira negativo
+});
+
+test('latestContacts: só canais de contato real, pega o mais recente por empresa', () => {
+  const rows = [
+    { company_id: 'a', channel: 'note', sent_at: iso(2026, 10, 14) },        // nota/automação não é contato
+    { company_id: 'a', channel: 'whatsapp', sent_at: iso(2026, 10, 3) },
+    { company_id: 'a', channel: 'email', sent_at: iso(2026, 10, 10) },
+    { company_id: 'b', channel: 'call', sent_at: iso(2026, 9, 28) },
+    { company_id: 'c', channel: 'note', sent_at: iso(2026, 10, 14) },
+    { company_id: 'd', channel: 'whatsapp', sent_at: 'lixo' },
+    null, { channel: 'email', sent_at: iso(2026, 10, 1) }
+  ];
+  const m = P.latestContacts(rows, NOW);
+  assert.equal(m.get('a').days, 5);
+  assert.equal(m.get('b').days, 18);
+  assert.equal(m.has('c'), false); assert.equal(m.has('d'), false);
+  assert.equal(m.size, 2);
+});
+
+test('growthByCompany: variação percentual da ativação; menos de 2 pontos ou base zero = null', () => {
+  const g = P.growthByCompany([
+    { company_id: 'a', activation_rate: 50, recorded_at: '2026-10-20' },
+    { company_id: 'a', activation_rate: 60, recorded_at: '2026-11-14' },
+    { company_id: 'a', activation_rate: 55, recorded_at: '2026-11-01' },   // fora de ordem: usa primeiro e último por data
+    { company_id: 'b', activation_rate: 40, recorded_at: '2026-11-14' },    // só um ponto
+    { company_id: 'c', activation_rate: 0, recorded_at: '2026-10-20' },
+    { company_id: 'c', activation_rate: 30, recorded_at: '2026-11-14' },    // base zero
+    { company_id: 'd', activation_rate: 80, recorded_at: '2026-10-20' },
+    { company_id: 'd', activation_rate: 68, recorded_at: '2026-11-14' }
+  ]);
+  assert.equal(g.get('a'), 20); assert.equal(g.get('b'), null); assert.equal(g.get('c'), null); assert.equal(g.get('d'), -15);
+});
+
+test('applyHomeSignals: contato no mês só vale dentro do mês corrente', () => {
+  const list = [{ uuid: 'a' }, { uuid: 'b' }, { uuid: 'c' }];
+  const contacts = P.latestContacts([
+    { company_id: 'a', channel: 'email', sent_at: iso(2026, 10, 2) },      // 2/nov: no mês
+    { company_id: 'b', channel: 'email', sent_at: iso(2026, 9, 30) }       // 30/out: mês passado
+  ], NOW);
+  P.applyHomeSignals(list, contacts, P.growthByCompany([]), NOW);
+  assert.equal(list[0].contactedThisMonth, true); assert.equal(list[0].lastContactDays, 13);
+  assert.equal(list[1].contactedThisMonth, false); assert.equal(list[1].lastContactDays, 16);
+  assert.equal(list[2].contactedThisMonth, false); assert.equal(list[2].lastContactAt, null); assert.equal(list[2].growthPct, null);
+});
+
+test('mapCompany expõe loginDays para o pilar de login', () => {
+  const r = P.mapCompany({ id: U1, name: 'X', last_login_at: iso(2026, 10, 3) }, null, NOW);
+  assert.equal(r.loginDays, 12);
+  assert.equal(P.mapCompany({ id: U2, name: 'Y', last_login_at: null }, null, NOW).loginDays, null);
+});
