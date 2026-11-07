@@ -33,6 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const failed: Array<{ index: number; reason: string }> = [];
   let updated = 0;
+  // Fila de revisão: grava só os números já validados (nunca o corpo bruto); deduplica e limita no banco.
+  const enqueueUnmatched = async (platformId: string | null, cnpj: string | null, patch: unknown, reason: string): Promise<boolean> => {
+    const { data, error } = await admin.rpc('fn_enqueue_unmatched', { p_platform_id: platformId, p_cnpj: cnpj, p_payload: patch, p_reason: reason });
+    return !error && data === true;
+  };
 
   // Em blocos de 10 para não abrir centenas de conexões ao mesmo tempo
   for (let start = 0; start < batch.items.length; start += 10) {
@@ -55,13 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             companyId = mapData.company_id;
           } else {
             // Registra na fila de sem correspondência para resolução do CSM/Head
-            await admin.from('unmatched_metrics').insert({
-              platform_name: 'benefits_platform',
-              platform_id: parsed.target.value,
-              payload: raw,
-              reason: 'ID da plataforma externa não mapeado'
-            });
-            failed.push({ index, reason: 'empresa não mapeada (enviada para fila de revisão)' });
+            const q = await enqueueUnmatched(parsed.target.value, null, parsed.patch, 'ID da plataforma externa não mapeado');
+            failed.push({ index, reason: q ? 'empresa não mapeada (enviada para fila de revisão)' : 'empresa não mapeada (fila de revisão cheia ou indisponível)' });
             return;
           }
         }
@@ -75,14 +75,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         if (!data || data.length === 0) {
           // Registra na fila de sem correspondência para investigação da equipe
-          await admin.from('unmatched_metrics').insert({
-            platform_name: 'benefits_platform',
-            platform_id: parsed.target.kind === 'platform_id' ? parsed.target.value : null,
-            cnpj: parsed.target.kind === 'cnpj' ? parsed.target.value : null,
-            payload: raw,
-            reason: 'empresa não encontrada'
-          });
-          failed.push({ index, reason: 'empresa não encontrada' });
+          const q = await enqueueUnmatched(
+            parsed.target.kind === 'platform_id' ? parsed.target.value : null,
+            parsed.target.kind === 'cnpj' ? parsed.target.value : null,
+            parsed.patch, 'empresa não encontrada');
+          failed.push({ index, reason: q ? 'empresa não encontrada (enviada para fila de revisão)' : 'empresa não encontrada' });
           return;
         }
         updated += data.length;

@@ -25,7 +25,7 @@ before(async () => {
   await db.exec(sql('schema.sql').replace(/^.*uuid-ossp.*$/m, ''));
   for (const f of ['0002_event_log_automation', '0003_workflow_steps_and_views']) await db.exec(sql(`migrations/${f}.sql`));
   await db.exec(`grant usage on schema public to anon, authenticated, service_role; grant all on all tables in schema public to anon, authenticated, service_role;`);
-  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0005_health_score_server', '0006_webhook_idempotency', '0007_external_mappings_and_health_config']) await db.exec(sql(`migrations/${f}.sql`)); // 0005 idempotente
+  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0005_health_score_server', '0006_webhook_idempotency', '0007_external_mappings_and_health_config', '0008_health_config_wiring_and_unmatched_queue']) await db.exec(sql(`migrations/${f}.sql`)); // 0005 idempotente
   await db.exec(`grant all on all tables in schema public to authenticated, service_role;`);
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`insert into csm_users(id,auth_id,name,email,role) values

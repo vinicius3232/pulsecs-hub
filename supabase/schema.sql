@@ -194,8 +194,10 @@ CREATE TABLE IF NOT EXISTS public.unmatched_metrics (
   resolved_to_company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
   resolved_at TIMESTAMPTZ,
   resolved_by UUID REFERENCES public.csm_users(id) ON DELETE SET NULL,
+  hits INT NOT NULL DEFAULT 1,              -- reenvios da mesma pendência (0008)
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Políticas, funções (fn_enqueue/resolve/purge_unmatched) e a calibração ativa vêm das migrations 0007 e 0008.
 
 -- 9. TABELA: health_config (Fase B)
 CREATE TABLE IF NOT EXISTS public.health_config (

@@ -47,6 +47,10 @@ before(async () => {
   await db.exec(sql('migrations/0005_health_score_server.sql')); // guard de colunas e recálculo convivem com a RLS
   await db.exec(sql('migrations/0006_webhook_idempotency.sql'));
   await db.exec(sql('migrations/0007_external_mappings_and_health_config.sql'));
+  // GRANTs padrão do Supabase também para as tabelas de 0006/0007 (sem isto os testes de negação passam pelo motivo errado)
+  await db.exec(`grant all on all tables in schema public to authenticated, service_role; grant all on public.health_config, public.company_external_mappings, public.unmatched_metrics to anon;`);
+  await db.exec(sql('migrations/0008_health_config_wiring_and_unmatched_queue.sql'));
+  await db.exec(sql('migrations/0008_health_config_wiring_and_unmatched_queue.sql')); // idempotente
 
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`
@@ -91,7 +95,7 @@ const blocked = r => { assert.equal(r.error, null, r.error); assert.equal(r.coun
 
 // ---------------------------------------------------------------------------
 test('anon: nenhuma tabela do app é acessível', async () => {
-  for (const t of ['companies', 'contacts', 'meetings', 'interactions', 'csm_users', 'csm_tasks', 'event_log', 'automation_rules', 'saved_views', 'health_snapshots']) {
+  for (const t of ['companies', 'contacts', 'meetings', 'interactions', 'csm_users', 'csm_tasks', 'event_log', 'automation_rules', 'saved_views', 'health_snapshots', 'health_config', 'company_external_mappings', 'unmatched_metrics']) {
     denied(await as('anon', `select * from ${t}`));
   }
 });
@@ -220,30 +224,94 @@ test('service role continua operando (cron e webhook)', async () => {
 });
 
 test('fase b: rls em health_config, company_external_mappings e unmatched_metrics', async () => {
-  // health_config: CSM lê; só Head escreve/altera; anon/outsider nada
-  const cfgHead = await as('head', 'select * from health_config where is_active = true');
-  assert.equal(cfgHead.rows.length, 1);
-  const cfgCsm = await as('csmA', 'select * from health_config where is_active = true');
-  assert.equal(cfgCsm.rows.length, 1);
+  // health_config: equipe lê; só o Head cadastra; ninguém altera/apaga o histórico
+  assert.equal((await as('head', 'select * from health_config where is_active = true')).rows.length, 1);
+  assert.equal((await as('csmA', 'select * from health_config where is_active = true')).rows.length, 1);
   assert.equal((await as('outsider', 'select * from health_config')).rows.length, 0);
-
-  // Tentativa de CSM alterar pesos é bloqueada (0 linhas afetadas no update, erro no insert)
-  blocked(await as('csmA', `update health_config set weight_activation = 0.50`));
+  denied(await as('csmA', `update health_config set weight_activation = 0.50`));
+  denied(await as('head', `update health_config set weight_activation = 0.50`));
+  denied(await as('head', `delete from health_config`));
   denied(await as('csmA', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps) values (0.4, 0.2, 0.2, 0.1, 0.1)`));
-
-  // Head pode cadastrar nova calibração
+  denied(await as('viewer', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps) values (0.4, 0.2, 0.2, 0.1, 0.1)`));
   ok(await as('head', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps, notes) values (0.40, 0.20, 0.15, 0.15, 0.10, 'Calibracao Head')`));
+  // a nova calibração vira a única ativa e o autor não pode ser forjado
+  const act = await as('head', `select notes, created_by from health_config where is_active`);
+  assert.equal(act.rows.length, 1);
+  assert.equal(act.rows[0].notes, 'Calibracao Head');
+  assert.equal(act.rows[0].created_by, CSM.head);
 
-  // company_external_mappings: CSM lê, só Head insere
+  // company_external_mappings: equipe lê, só Head insere
   denied(await as('csmA', `insert into company_external_mappings(company_id, external_platform_id) values ('${C.c1}', 'ext_1')`));
   ok(await as('head', `insert into company_external_mappings(company_id, external_platform_id) values ('${C.c1}', 'ext_1')`));
-  const maps = await as('csmA', 'select * from company_external_mappings');
-  assert.equal(maps.rows.length, 1);
+  assert.equal((await as('csmA', 'select * from company_external_mappings')).rows.length, 1);
+});
 
-  // unmatched_metrics: equipe autenticada lê e atualiza
-  await db.exec(`reset role; set role service_role; insert into unmatched_metrics(platform_id, reason) values ('p_1', 'pendente'); reset role;`);
-  const un = await as('csmA', 'select * from unmatched_metrics');
-  assert.equal(un.rows.length, 1);
-  ok(await as('csmA', `update unmatched_metrics set resolved = true where platform_id = 'p_1'`));
+test('fila sem correspondência: só o servidor grava, só o Head resolve, ninguém edita direto', async () => {
+  const svc = async q => { await db.exec('reset role; set role service_role;'); try { return await db.query(q); } finally { await db.exec('reset role'); } };
+  // entrada (servidor): deduplica reenvios
+  assert.equal((await svc(`select public.fn_enqueue_unmatched('p_9', null, '{"eligible_lives":50,"active_lives":40,"mau_lives":30}'::jsonb, 'x') as r`)).rows[0].r, true);
+  await svc(`select public.fn_enqueue_unmatched('p_9', null, '{"eligible_lives":60,"active_lives":50,"mau_lives":40}'::jsonb, 'x')`);
+  const q = await svc(`select id, hits, payload from unmatched_metrics where platform_id = 'p_9'`);
+  assert.equal(q.rows.length, 1, 'reenvio atualiza a mesma pendência');
+  assert.equal(q.rows[0].hits, 2);
+  assert.equal(q.rows[0].payload.eligible_lives, 60, 'vale o dado mais recente');
+  const id = q.rows[0].id;
+
+  // payload gigante é recusado
+  let big = null;
+  try { await svc(`select public.fn_enqueue_unmatched('p_big', null, jsonb_build_object('x', repeat('a', 5000)), 'x')`); } catch (e) { big = e.message; }
+  assert.ok(big, 'payload acima de 2 KB deve ser recusado');
+
+  // equipe lê, ninguém escreve direto (nem viewer, nem csm, nem head)
+  assert.equal((await as('csmA', 'select * from unmatched_metrics')).rows.length >= 1, true);
   assert.equal((await as('outsider', 'select * from unmatched_metrics')).rows.length, 0);
+  for (const who of ['viewer', 'csmA', 'is', 'head']) {
+    denied(await as(who, `update unmatched_metrics set resolved = true where id = '${id}'`));
+    denied(await as(who, `delete from unmatched_metrics where id = '${id}'`));
+    denied(await as(who, `insert into unmatched_metrics(reason) values ('forjada')`));
+  }
+  // o navegador não enfileira
+  denied(await as('csmA', `select public.fn_enqueue_unmatched('p_x', null, '{}'::jsonb, 'x')`));
+
+  // resolver: só o Head
+  for (const who of ['viewer', 'csmA', 'is', 'outsider', 'anon']) denied(await as(who, `select public.fn_resolve_unmatched('${id}', '${C.c2}')`));
+  const res = await as('head', `select public.fn_resolve_unmatched('${id}', '${C.c2}') as r`);
+  ok(res);
+  assert.equal(res.rows[0].r, 'applied');
+  const co = (await svc(`select eligible_lives, active_lives, mau_lives, health_score from companies where id = '${C.c2}'`)).rows[0];
+  assert.equal(co.eligible_lives, 60);
+  assert.equal(co.active_lives, 50);
+  assert.equal(co.mau_lives, 40);
+  assert.ok(co.health_score > 0, 'o score foi recalculado ao reaplicar as métricas');
+  assert.equal((await svc(`select count(*)::int n from company_external_mappings where external_platform_id = 'p_9' and company_id = '${C.c2}'`)).rows[0].n, 1, 'mapeamento estável criado');
+  assert.equal((await svc(`select resolved_to_company_id r from unmatched_metrics where id = '${id}'`)).rows[0].r, C.c2);
+  denied(await as('head', `select public.fn_resolve_unmatched('${id}', '${C.c2}')`)); // já resolvida
+
+  // um ID da plataforma já ligado a outra empresa não é reatribuído em silêncio
+  await svc(`select public.fn_enqueue_unmatched('p_9', null, '{"active_lives":1}'::jsonb, 'x')`);
+  const id2 = (await svc(`select id from unmatched_metrics where platform_id = 'p_9' and not resolved`)).rows[0].id;
+  denied(await as('head', `select public.fn_resolve_unmatched('${id2}', '${C.c1}')`));
+  // descartar
+  assert.equal((await as('head', `select public.fn_resolve_unmatched('${id2}', null) as r`)).rows[0].r, 'discarded');
+
+  // retenção: resolvidas antigas somem; recentes ficam
+  await svc(`update unmatched_metrics set resolved_at = now() - interval '200 days' where id = '${id}'`);
+  assert.equal((await svc(`select public.fn_purge_unmatched(90) as n`)).rows[0].n, 1);
+  assert.equal((await svc(`select count(*)::int n from unmatched_metrics where id = '${id2}'`)).rows[0].n, 1);
+  denied(await as('head', `select public.fn_purge_unmatched(90)`));
+});
+
+test('calibração: o recálculo usa a calibração ativa (e o histórico guarda a anterior)', async () => {
+  const svc = async q => { await db.exec('reset role; set role service_role;'); try { return await db.query(q); } finally { await db.exec('reset role'); } };
+  await svc(`update companies set eligible_lives = 100, active_lives = 90, mau_lives = 80, nps_score = 9, renewal_date = current_date + 300, last_login_at = now(), has_overdue_invoice = false where id = '${C.c4}'`);
+  await svc(`select public.fn_recompute_health('${C.c4}')`);
+  assert.equal((await svc(`select health_score from companies where id = '${C.c4}'`)).rows[0].health_score, 100);
+  // Head cadastra uma calibração com penalidade de inadimplência de 60 pontos
+  ok(await as('head', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps, penalty_overdue, threshold_green, threshold_yellow, notes) values (0.20,0.20,0.20,0.20,0.20, 60, 100, 90, 'rigida')`));
+  await svc(`update companies set has_overdue_invoice = true where id = '${C.c4}'`); // o gatilho recalcula com a calibração ativa
+  const after = (await svc(`select health_score, health_status from companies where id = '${C.c4}'`)).rows[0];
+  assert.equal(after.health_score, 40, 'penalidade calibrada (60), não a padrão (25)');
+  assert.equal(after.health_status, 'red');
+  assert.ok((await svc(`select count(*)::int n from health_config`)).rows[0].n >= 3, 'histórico preservado');
+  assert.equal((await svc(`select count(*)::int n from health_config where is_active`)).rows[0].n, 1);
 });

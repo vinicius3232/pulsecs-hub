@@ -35,6 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Retenção das entregas de webhook (best effort: falha aqui não derruba o cron)
     await admin.rpc('fn_purge_webhook_deliveries', { p_days: 90 });
+    await admin.rpc('fn_purge_unmatched', { p_days: 90 });
 
     // 2) Eventos guiados pelo relógio (renovação próxima, RH sem login)
     const { data: emitted, error: emitErr } = await admin.rpc('fn_emit_time_events');
