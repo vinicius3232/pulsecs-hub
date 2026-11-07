@@ -41,14 +41,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const parsed = parseMetricsItem(raw);
       if (!parsed.ok) { failed.push({ index, reason: parsed.reason }); return; }
       try {
+        let companyId: string | null = null;
+        if (parsed.target.kind === 'id') {
+          companyId = parsed.target.value;
+        } else if (parsed.target.kind === 'platform_id') {
+          const { data: mapData } = await admin
+            .from('company_external_mappings')
+            .select('company_id')
+            .eq('platform_name', 'benefits_platform')
+            .eq('external_platform_id', parsed.target.value)
+            .maybeSingle();
+          if (mapData?.company_id) {
+            companyId = mapData.company_id;
+          } else {
+            // Registra na fila de sem correspondência para resolução do CSM/Head
+            await admin.from('unmatched_metrics').insert({
+              platform_name: 'benefits_platform',
+              platform_id: parsed.target.value,
+              payload: raw,
+              reason: 'ID da plataforma externa não mapeado'
+            });
+            failed.push({ index, reason: 'empresa não mapeada (enviada para fila de revisão)' });
+            return;
+          }
+        }
+
         const q = admin.from('companies').update(parsed.patch).select('id');
-        const { data, error } = await (parsed.target.kind === 'id' ? q.eq('id', parsed.target.value) : q.eq('cnpj', parsed.target.value));
+        const { data, error } = await (companyId ? q.eq('id', companyId) : q.eq('cnpj', parsed.target.value));
         if (error) {
           // O CHECK do banco recusa números incoerentes (ex.: ativadas > elegíveis)
           failed.push({ index, reason: /companies_lives_consistent|check constraint/i.test(error.message) ? 'números incoerentes (ativadas > elegíveis ou MAU > ativadas)' : 'erro ao gravar' });
           return;
         }
-        if (!data || data.length === 0) { failed.push({ index, reason: 'empresa não encontrada' }); return; }
+        if (!data || data.length === 0) {
+          // Registra na fila de sem correspondência para investigação da equipe
+          await admin.from('unmatched_metrics').insert({
+            platform_name: 'benefits_platform',
+            platform_id: parsed.target.kind === 'platform_id' ? parsed.target.value : null,
+            cnpj: parsed.target.kind === 'cnpj' ? parsed.target.value : null,
+            payload: raw,
+            reason: 'empresa não encontrada'
+          });
+          failed.push({ index, reason: 'empresa não encontrada' });
+          return;
+        }
         updated += data.length;
       } catch {
         failed.push({ index, reason: 'erro ao gravar' });

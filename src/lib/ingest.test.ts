@@ -16,6 +16,12 @@ test('item válido por company_id e por cnpj (com máscara)', () => {
   }
   const b = parseMetricsItem({ cnpj: '12.345.678/0001-90', active_lives: 5 }, NOW);
   assert.ok(b.ok && b.target.kind === 'cnpj' && b.target.value === '12345678000190');
+
+  const c = parseMetricsItem({ platform_id: 'empresa_externa_123', active_lives: 50 }, NOW);
+  assert.ok(c.ok && c.target.kind === 'platform_id' && c.target.value === 'empresa_externa_123');
+
+  const d = parseMetricsItem({ external_id: 'ext_999', eligible_lives: 100, active_lives: 80 }, NOW);
+  assert.ok(d.ok && d.target.kind === 'platform_id' && d.target.value === 'ext_999');
 });
 
 test('só chaves conhecidas chegam ao patch (mass assignment bloqueado)', () => {
@@ -27,9 +33,10 @@ test('só chaves conhecidas chegam ao patch (mass assignment bloqueado)', () => 
 test('recusa alvo ausente/inválido e itens que não são objetos', () => {
   for (const [raw, why] of [
     [null, /objeto/], [[], /objeto/], ['x', /objeto/],
-    [{ active_lives: 1 }, /company_id ou cnpj/],
+    [{ active_lives: 1 }, /company_id, cnpj ou platform_id/],
     [{ company_id: 'nao-uuid', active_lives: 1 }, /company_id inválido/],
     [{ cnpj: '123', active_lives: 1 }, /14 dígitos/],
+    [{ platform_id: '', active_lives: 1 }, /platform_id deve ter/],
     [{ company_id: ID }, /nenhuma métrica/]
   ] as const) {
     const r = parseMetricsItem(raw, NOW);

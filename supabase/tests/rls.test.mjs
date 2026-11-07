@@ -45,6 +45,8 @@ before(async () => {
   await db.exec(sql('migrations/0004_rls_by_role.sql'));
   await db.exec(sql('migrations/0004_rls_by_role.sql')); // idempotente
   await db.exec(sql('migrations/0005_health_score_server.sql')); // guard de colunas e recálculo convivem com a RLS
+  await db.exec(sql('migrations/0006_webhook_idempotency.sql'));
+  await db.exec(sql('migrations/0007_external_mappings_and_health_config.sql'));
 
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`
@@ -215,4 +217,33 @@ test('service role continua operando (cron e webhook)', async () => {
   assert.equal(r.affectedRows, 1);
   await db.query(`select public.fn_emit_time_events()`);
   await db.exec('reset role');
+});
+
+test('fase b: rls em health_config, company_external_mappings e unmatched_metrics', async () => {
+  // health_config: CSM lê; só Head escreve/altera; anon/outsider nada
+  const cfgHead = await as('head', 'select * from health_config where is_active = true');
+  assert.equal(cfgHead.rows.length, 1);
+  const cfgCsm = await as('csmA', 'select * from health_config where is_active = true');
+  assert.equal(cfgCsm.rows.length, 1);
+  assert.equal((await as('outsider', 'select * from health_config')).rows.length, 0);
+
+  // Tentativa de CSM alterar pesos é bloqueada (0 linhas afetadas no update, erro no insert)
+  blocked(await as('csmA', `update health_config set weight_activation = 0.50`));
+  denied(await as('csmA', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps) values (0.4, 0.2, 0.2, 0.1, 0.1)`));
+
+  // Head pode cadastrar nova calibração
+  ok(await as('head', `insert into health_config(weight_activation, weight_mau, weight_rh, weight_renewal, weight_nps, notes) values (0.40, 0.20, 0.15, 0.15, 0.10, 'Calibracao Head')`));
+
+  // company_external_mappings: CSM lê, só Head insere
+  denied(await as('csmA', `insert into company_external_mappings(company_id, external_platform_id) values ('${C.c1}', 'ext_1')`));
+  ok(await as('head', `insert into company_external_mappings(company_id, external_platform_id) values ('${C.c1}', 'ext_1')`));
+  const maps = await as('csmA', 'select * from company_external_mappings');
+  assert.equal(maps.rows.length, 1);
+
+  // unmatched_metrics: equipe autenticada lê e atualiza
+  await db.exec(`reset role; set role service_role; insert into unmatched_metrics(platform_id, reason) values ('p_1', 'pendente'); reset role;`);
+  const un = await as('csmA', 'select * from unmatched_metrics');
+  assert.equal(un.rows.length, 1);
+  ok(await as('csmA', `update unmatched_metrics set resolved = true where platform_id = 'p_1'`));
+  assert.equal((await as('outsider', 'select * from unmatched_metrics')).rows.length, 0);
 });

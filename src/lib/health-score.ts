@@ -21,7 +21,32 @@ export interface HealthScoreResult {
   risk_factors: string[];
 }
 
-export function calculateAdoptionHealthScore(input: HealthScoreInput): HealthScoreResult {
+export interface HealthScoreConfig {
+  weight_activation?: number;
+  weight_mau?: number;
+  weight_rh?: number;
+  weight_renewal?: number;
+  weight_nps?: number;
+  penalty_overdue?: number;
+  threshold_green?: number;
+  threshold_yellow?: number;
+}
+
+export const DEFAULT_HEALTH_CONFIG: Required<HealthScoreConfig> = {
+  weight_activation: 0.35,
+  weight_mau: 0.25,
+  weight_rh: 0.15,
+  weight_renewal: 0.15,
+  weight_nps: 0.10,
+  penalty_overdue: 25,
+  threshold_green: 75,
+  threshold_yellow: 50
+};
+
+export function calculateAdoptionHealthScore(
+  input: HealthScoreInput,
+  config?: HealthScoreConfig
+): HealthScoreResult {
   const {
     eligible_lives,
     active_lives,
@@ -31,6 +56,15 @@ export function calculateAdoptionHealthScore(input: HealthScoreInput): HealthSco
     has_overdue_invoice = false
   } = input;
   const nps_score = input.nps_score ?? 8; // null/undefined = padrão 8 (igual ao banco)
+
+  const w_act = config?.weight_activation ?? DEFAULT_HEALTH_CONFIG.weight_activation;
+  const w_mau = config?.weight_mau ?? DEFAULT_HEALTH_CONFIG.weight_mau;
+  const w_rh = config?.weight_rh ?? DEFAULT_HEALTH_CONFIG.weight_rh;
+  const w_renov = config?.weight_renewal ?? DEFAULT_HEALTH_CONFIG.weight_renewal;
+  const w_nps = config?.weight_nps ?? DEFAULT_HEALTH_CONFIG.weight_nps;
+  const penalty = config?.penalty_overdue ?? DEFAULT_HEALTH_CONFIG.penalty_overdue;
+  const thresh_green = config?.threshold_green ?? DEFAULT_HEALTH_CONFIG.threshold_green;
+  const thresh_yellow = config?.threshold_yellow ?? DEFAULT_HEALTH_CONFIG.threshold_yellow;
 
   const risk_factors: string[] = [];
 
@@ -91,23 +125,23 @@ export function calculateAdoptionHealthScore(input: HealthScoreInput): HealthSco
 
   // Cálculo ponderado
   let totalScore = Math.round(
-    0.35 * s_ativ +
-    0.25 * s_mau +
-    0.15 * s_rh +
-    0.15 * s_renov +
-    0.10 * s_nps
+    w_act * s_ativ +
+    w_mau * s_mau +
+    w_rh * s_rh +
+    w_renov * s_renov +
+    w_nps * s_nps
   );
 
-  // Penalidade de inadimplência financeira (-25 pontos)
+  // Penalidade de inadimplência financeira (-25 pontos padrão ou calibrado)
   if (has_overdue_invoice) {
-    totalScore = Math.max(0, totalScore - 25);
+    totalScore = Math.max(0, totalScore - penalty);
     risk_factors.push('Fatura em atraso / Inadimplência financeira');
   }
 
-  // Determinação de status
+  // Determinação de status conforme limiares
   let status: 'green' | 'yellow' | 'red' = 'green';
-  if (totalScore >= 75) status = 'green';
-  else if (totalScore >= 50) status = 'yellow';
+  if (totalScore >= thresh_green) status = 'green';
+  else if (totalScore >= thresh_yellow) status = 'yellow';
   else status = 'red';
 
   return {

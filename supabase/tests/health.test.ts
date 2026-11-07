@@ -25,7 +25,7 @@ before(async () => {
   await db.exec(sql('schema.sql').replace(/^.*uuid-ossp.*$/m, ''));
   for (const f of ['0002_event_log_automation', '0003_workflow_steps_and_views']) await db.exec(sql(`migrations/${f}.sql`));
   await db.exec(`grant usage on schema public to anon, authenticated, service_role; grant all on all tables in schema public to anon, authenticated, service_role;`);
-  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0005_health_score_server']) await db.exec(sql(`migrations/${f}.sql`)); // 0005 idempotente
+  for (const f of ['0004_rls_by_role', '0005_health_score_server', '0005_health_score_server', '0006_webhook_idempotency', '0007_external_mappings_and_health_config']) await db.exec(sql(`migrations/${f}.sql`)); // 0005 idempotente
   await db.exec(`grant all on all tables in schema public to authenticated, service_role;`);
   for (const id of Object.values(U)) await db.exec(`insert into auth.users(id) values ('${id}')`);
   await db.exec(`insert into csm_users(id,auth_id,name,email,role) values
@@ -176,4 +176,51 @@ test('seed.sql continua válido com as novas regras e todas as empresas recebem 
   assert.ok(n.n >= 11, 'recalculou ' + n.n);
   assert.ok(rows.every(r => ['green', 'yellow', 'red'].includes(r.health_status)));
   assert.equal((await scalar(`select count(*)::int n from companies where eligible_lives > 0 and health_computed_at is null`)).n, 0);
+});
+
+test('paridade SQL x TypeScript: calibração de pesos customizados e tabela health_config', async () => {
+  // Teste de calibração alternativa: Ativação 40%, MAU 20%, RH 15%, Renovação 15%, NPS 10%, Penalidade 30, Limiares 80 e 60
+  const customConfig = {
+    weight_activation: 0.40,
+    weight_mau: 0.20,
+    weight_rh: 0.15,
+    weight_renewal: 0.15,
+    weight_nps: 0.10,
+    penalty_overdue: 30,
+    threshold_green: 80,
+    threshold_yellow: 60
+  };
+
+  const cases = [
+    { eligible: 1000, active: 850, mau: 700, rh: 3, renew: 90, nps: 9, overdue: false },
+    { eligible: 500, active: 200, mau: 50, rh: 20, renew: 45, nps: 6, overdue: true },
+    { eligible: 2000, active: 1800, mau: 1500, rh: null, renew: 15, nps: 10, overdue: false },
+    { eligible: 100, active: 90, mau: 80, rh: 10, renew: 120, nps: 8, overdue: false }
+  ];
+
+  for (const c of cases) {
+    const ts = calculateAdoptionHealthScore({
+      eligible_lives: c.eligible,
+      active_lives: c.active,
+      mau_lives: c.mau,
+      rh_last_login_days: c.rh,
+      days_to_renewal: c.renew,
+      nps_score: c.nps,
+      has_overdue_invoice: c.overdue
+    }, customConfig);
+
+    const sqlRes = await scalar(`
+      select public.fn_health_calc_configurable(
+        ${c.eligible}, ${c.active}, ${c.mau}, ${c.rh === null ? 'null' : c.rh}, ${c.renew},
+        ${c.nps}, ${c.overdue},
+        ${customConfig.weight_activation}, ${customConfig.weight_mau},
+        ${customConfig.weight_rh}, ${customConfig.weight_renewal},
+        ${customConfig.weight_nps}, ${customConfig.penalty_overdue},
+        ${customConfig.threshold_green}, ${customConfig.threshold_yellow}
+      ) as res
+    `);
+
+    assert.equal(ts.score, sqlRes.res.score, `Divergência de score: TS=${ts.score} vs SQL=${sqlRes.res.score}`);
+    assert.equal(ts.status, sqlRes.res.status, `Divergência de status: TS=${ts.status} vs SQL=${sqlRes.res.status}`);
+  }
 });
