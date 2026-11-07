@@ -1,0 +1,43 @@
+name: PulseCS Quality Gate & CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Test Suites & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Type Check (Strict TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Unit & Integration Tests (Engine, Automation, Webhook, RateLimit)
+        run: npm test
+
+      - name: Row-Level Security Tests (RLS by Role)
+        run: npm run test:rls
+
+      - name: Health Score Parity Tests (SQL vs TypeScript)
+        run: npm run test:health
+
+      - name: Idempotency & Webhook Delivery Tests
+        run: npm run test:idempotency
+
+      - name: Accessibility Guard Tests (WCAG 2.1 AA)
+        run: npm run test:a11y
